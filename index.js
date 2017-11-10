@@ -98,22 +98,6 @@ app.put('/users/:id', (req, res) => co(function *() {
     })
 );
 
-app.get('/users/create', (req, res) => {
-// TODO special endpoint to create users
-    let awesome_instance = new UserModel(
-    { name: 'awesome',
-    interests: 'nothing',
-    waiting_time: 60,
-    location: "Amsterdam",
-      created_at: new Date()});
-
-    // Save the new model instance, passing a callback
-    awesome_instance.save(function (err) {
-      if (err) return handleError(err);
-      // saved!
-    });
-});
-
 app.listen(3001, () => console.log('Example app listening on port 3001!'));
 
 function handleError(err) {
