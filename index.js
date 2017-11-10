@@ -38,7 +38,7 @@ app.get('/users', (req, res) => co(function *() {
                                    .add(user.waiting_time, 'm')
                                    .diff(new Date(), 'minutes')
                    }
-              });
+              }).filter(user => user.time_left > 0);
        res.json(users);
     })
     .catch(err => {
