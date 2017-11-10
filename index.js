@@ -20,6 +20,7 @@ let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 const app = express();
+const expressWs = require('express-ws')(app);
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
@@ -72,7 +73,7 @@ app.post('/users', (req, res) => co(function *() {
 app.put('/users/:id', (req, res) => co(function *() {
         let id = req.params.id;
         let user = yield UserModel.findOne({_id: id});
-        console.log("user : ", user);
+        // console.log("user : ", user);
         if (user) {
             user.location = req.body.location || user.location;
             user.waiting_time = req.body.waiting_time || user.waiting_time;
@@ -97,6 +98,21 @@ app.put('/users/:id', (req, res) => co(function *() {
         res.send({error: err});
     })
 );
+
+app.ws('/messages', function(ws, req) {
+  ws.on('message', (msg) => co(function *() {
+        msg = JSON.parse(msg);
+        let sender = yield UserModel.findOne({_id: msg.sender_id});
+        let receiver = yield UserModel.findOne({_id: msg.receiver_id});
+        msg.created_at = new Date();
+        console.log("Message received ", msg);
+        let new_message = new MessageModel(msg);
+        yield new_message.save();
+        ws.send(JSON.stringify(new_message));
+    }).catch(err => {
+            console.info(err);
+        }))
+});
 
 app.listen(3001, () => console.log('Example app listening on port 3001!'));
 
