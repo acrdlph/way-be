@@ -6,7 +6,8 @@ let messageSchema = new Schema({
   sender_id: String,
   receiver_id: String,
   message: String,
-  created_at: Date
+  created_at: Date,
+  delivered: Boolean
 });
 
 let Message = mongoose.model('Message', messageSchema);

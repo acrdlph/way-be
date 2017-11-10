@@ -9,6 +9,8 @@ const bodyParser = require('body-parser');
 //Set up default mongoose connection
 let mongoDB = 'mongodb://waitlist:waitlist@ds257245.mlab.com:57245/waitlist';
 
+let ws_connections = {};
+
 mongoose.connect(mongoDB, {
   useMongoClient: true
 });
@@ -21,6 +23,10 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 const app = express();
 const expressWs = require('express-ws')(app);
+app.param('user_id', function (req, res, next, user_id) {
+  req.user_id = user_id || 'user_id';
+  return next();
+});
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
@@ -129,24 +135,30 @@ app.get('/messages', (req, res) => co(function *() {
 );
 
 
-app.ws('/messages', function(ws, req) {
-  ws.on('message', (msg) => co(function *() {
+app.ws('/messages/:user_id', function(ws, req) {
+    console.log("user id ", req.user_id);
+    ws_connections[req.user_id] = ws;
+    ws.on('message', (msg) => co(function *() {
         msg = JSON.parse(msg);
-        let sender = yield UserModel.findOne({_id: msg.sender_id});
-        let receiver = yield UserModel.findOne({_id: msg.receiver_id});
+        //let sender = yield UserModel.findOne({_id: msg.sender_id});
+        //let receiver = yield UserModel.findOne({_id: msg.receiver_id});
         msg.created_at = new Date();
         console.log("Message received ", msg);
+        if (msg.receiver_id in ws_connections) {
+            ws_connections[msg.receiver_id].send(JSON.stringify({
+                sender_id: msg.sender_id,
+                receiver_id: msg.receiver_id,
+                created_at: msg.created_at
+            }));
+            msg.delivered = true;
+        } else {
+            msg.delivered = false;
+        }
         let new_message = new MessageModel(msg);
         yield new_message.save();
-        ws.send(JSON.stringify({
-            id: new_message._id,
-            sender_id: new_message.sender_id,
-            receiver_id: new_message.receiver_id,
-            created_at: new_message.created_at
-        }));
     }).catch(err => {
             console.info(err);
-        }))
+    }))
 });
 
 app.listen(3001, () => console.log('Example app listening on port 3001!'));
