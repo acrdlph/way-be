@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const UserModel = require('./models/user');
 const MessageModel = require('./models/message');
 const co = require('co');
+const moment = require('moment');
 
 
 //Set up default mongoose connection
@@ -23,13 +24,36 @@ const app = express();
 app.get('/', (req, res) => res.send('Hello World!'));
 
 app.get('/users', (req, res) => co(function *() {
+       let users = yield UserModel.find({});
+       users = users.map((user) => {
+                   return {
+                       id: user._id,
+                       name: user.name,
+                       interests: user.interests,
+                       location: user.location,
+                       time_left: moment(user.created_at)
+                                   .add(user.waiting_time, 'm')
+                                   .diff(new Date(), 'minutes')
+                   }
+              });
+       return res.json(users);
+    })
+    .catch(err => {
+        console.info(err);
+        res.send({error: err});
+    })
+);
+
+app.post('/users', (req, res) => co(function *() {
        users = yield UserModel.find({});
+
        return res.json(users);
     })
     .catch(err => {
         log.info(err);
         res.send({error: err});
-    }));
+    })
+);
 
 app.get('/users/create', (req, res) => {
 // TODO special endpoint to create users
