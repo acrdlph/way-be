@@ -108,7 +108,12 @@ app.ws('/messages', function(ws, req) {
         console.log("Message received ", msg);
         let new_message = new MessageModel(msg);
         yield new_message.save();
-        ws.send(JSON.stringify(new_message));
+        ws.send(JSON.stringify({
+            id: new_message._id,
+            sender_id: new_message.sender_id,
+            receiver_id: new_message.receiver_id,
+            created_at: new_message.created_at
+        }));
     }).catch(err => {
             console.info(err);
         }))
