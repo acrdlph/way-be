@@ -46,7 +46,7 @@ app.get('/users', (req, res) => co(function *() {
     })
 );
 
-app.post('/users/new', (req, res) => co(function *() {
+app.post('/users', (req, res) => co(function *() {
        let location = req.body.location;
        let waiting_time = req.body.waiting_time;
        let new_user = new UserModel(
@@ -69,9 +69,28 @@ app.post('/users/new', (req, res) => co(function *() {
     })
 );
 
-app.post('/users/update', (req, res) => co(function *() {
-       let location = req.body.location;
-       res.send(location);
+app.put('/users/:id', (req, res) => co(function *() {
+        let id = req.params.id;
+        let user = yield UserModel.findOne({_id: id});
+        console.log("user : ", user);
+        if (user) {
+            user.location = req.body.location || user.location;
+            user.waiting_time = req.body.waiting_time || user.waiting_time;
+            user.name = req.body.name || user.name;
+            user.interests = req.body.interests || user.interests;
+            yield user.save();
+            res.send({
+               id: user.id,
+               name: user.name,
+               interests: user.interests,
+               waiting_time: user.waiting_time,
+               location: user.location,
+               created_at: user.created_at
+            });
+        } else {
+            res.status(404);
+            res.json({});
+        }
     })
     .catch(err => {
         console.info(err);
