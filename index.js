@@ -26,8 +26,10 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.get('/users', (req, res) => co(function *() {
+app.get('/users/:user_id', (req, res) => co(function *() {
        let users = yield UserModel.find({});
+       let messages = yield MessageModel.find({receiver_id: req.param.user_id});
+       let message_counts =
        users = users.map((user) => {
                    return {
                        id: user._id,
@@ -36,7 +38,10 @@ app.get('/users', (req, res) => co(function *() {
                        location: user.location,
                        time_left: moment(user.created_at)
                                    .add(user.waiting_time, 'm')
-                                   .diff(new Date(), 'minutes')
+                                   .diff(new Date(), 'minutes'),
+                       count: messages.filter(
+                                                message => message.sender_id == user._id &&
+                                                message.receiver_id == req.param.user_id).length
                    }
               }).filter(user => user.time_left > 0);
        res.json(users);
