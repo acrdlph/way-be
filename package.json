@@ -15,6 +15,7 @@
   "homepage": "https://bitbucket.org/waitlistteam/waitlist-be#readme",
   "dependencies": {
     "body-parser": "^1.18.2",
+    "co": "^4.6.0",
     "express": "^4.16.2",
     "moment": "^2.19.1",
     "mongoose": "^4.13.1"
