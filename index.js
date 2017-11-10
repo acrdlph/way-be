@@ -50,6 +50,7 @@ app.get('/users', (req, res) => co(function *() {
 app.post('/users', (req, res) => co(function *() {
        let location = req.body.location;
        let waiting_time = req.body.waiting_time;
+       if (!location || !waiting_time) throw new Error("Can not save user");
        let new_user = new UserModel(
            {
                 waiting_time: waiting_time,
@@ -98,6 +99,30 @@ app.put('/users/:id', (req, res) => co(function *() {
         res.send({error: err});
     })
 );
+
+app.get('/messages', (req, res) => co(function *() {
+       let messages = yield MessageModel.find(
+            {
+                sender_id: req.query.sender_id,
+                receiver_id: req.query.receiver_id
+            }
+       );
+       messages = messages.map((message) => {
+                          return {
+                              id: message._id,
+                              sender_id: message.sender_id,
+                              receiver_id: message.receiver_id,
+                              created_at: message.created_at
+                          }
+                     });
+       res.json(messages);
+    })
+    .catch(err => {
+        console.info(err);
+        res.send({error: err});
+    })
+);
+
 
 app.ws('/messages', function(ws, req) {
   ws.on('message', (msg) => co(function *() {
