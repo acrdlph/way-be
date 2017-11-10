@@ -1,0 +1,20 @@
+{
+  "name": "waitlist-be",
+  "version": "1.0.0",
+  "description": "Waitlist API",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://vimukthi@bitbucket.org/waitlistteam/waitlist-be.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/waitlistteam/waitlist-be#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "mongoose": "^4.13.1"
+  }
+}
