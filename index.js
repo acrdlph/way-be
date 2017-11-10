@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const UserModel = require('./models/user');
 const MessageModel = require('./models/message');
+const co = require('co');
 
 
 //Set up default mongoose connection
@@ -21,18 +22,23 @@ const app = express();
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.get('/users', (req, res) => {
-    UserModel.find({}, function (err, users) {
-        if (err) {
-            handleError(err);
-        }
-        return res.json(users);
-    });
-});
+app.get('/users', (req, res) => co(function *() {
+       users = yield UserModel.find({});
+       return res.json(users);
+    })
+    .catch(err => {
+        log.info(err);
+        res.send({error: err});
+    }));
 
-app.post('/users/create', (req, res) => {
+app.get('/users/create', (req, res) => {
 // TODO special endpoint to create users
-//    let awesome_instance = new UserModel({ name: 'awesome' });
+//    let awesome_instance = new UserModel(
+//    { name: 'awesome',
+//    interests: 'nothing',
+//    waiting_time: 60,
+//    location: "Amsterdam",
+//      created_at: new Date()});
 //
 //    // Save the new model instance, passing a callback
 //    awesome_instance.save(function (err) {
