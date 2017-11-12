@@ -76,7 +76,7 @@ app.ws('/messages/:user_id', (ws, req) =>
     .catch(err => {console.info(err);})
 );
 
-app.listen(3001, () => console.log('Example app listening on port 3001!'));
+app.listen(3001, () => console.log('Waitlist API listening on port 3001!'));
 
 function handleError(req, res, err) {
     console.error(err.stack)
