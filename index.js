@@ -2,19 +2,19 @@ const express = require('express');
 const mongoose = require('mongoose');
 const co = require('co');
 const moment = require('moment');
-const bodyParser = require('body-parser');
+const body_parser = require('body-parser');
 
 const user_controller = require('./users');
 const message_model = require('./models/message');
 const message_controller = require('./messages');
 
 // Set up default mongoose connection
-let mongoDB = 'mongodb://waitlist:waitlist@ds257245.mlab.com:57245/waitlist';
+let mongo_db = 'mongodb://waitlist:waitlist@ds257245.mlab.com:57245/waitlist';
 
 let ws_connections = {};
 
 mongoose.Promise = global.Promise;
-mongoose.connect(mongoDB, {
+mongoose.connect(mongo_db, {
     useMongoClient: true
 });
 
@@ -25,7 +25,9 @@ let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 let app = express();
-const expressWs = require('express-ws')(app);
+const express_ws = require('express-ws')(app);
+
+// this is required for websocket url params by expressWs
 app.param('user_id', function (req, res, next, user_id) {
     req.user_id = user_id || 'user_id';
     return next();
@@ -35,8 +37,8 @@ app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
-app.use(bodyParser.json()); // support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+app.use(body_parser.json()); // support json encoded bodies
+app.use(body_parser.urlencoded({ extended: true })); // support encoded bodies
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
