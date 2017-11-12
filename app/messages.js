@@ -81,11 +81,20 @@ exports.initWsConnection = function* (ws, req) {
             ws_connections[msg.receiver_id].send(JSON.stringify({
                 sender_id: msg.sender_id,
                 receiver_id: msg.receiver_id,
-                created_at: msg.created_at
+                created_at: msg.created_at,
+                message: msg.message
             }));
             msg.delivered = true;
         } else {
             msg.delivered = false;
+        }
+        if (msg.sender_id in ws_connections) {
+            ws_connections[msg.sender_id].send(JSON.stringify({
+                sender_id: msg.sender_id,
+                receiver_id: msg.receiver_id,
+                created_at: msg.created_at,
+                message: msg.message
+            }));
         }
         let new_message = new message_model(msg);
         yield new_message.save();
