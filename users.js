@@ -31,6 +31,16 @@ exports.usersByUser = function* (req, res) {
 };
 
 /**
+ * get the given users details
+ * @param {*} req 
+ * @param {*} res 
+ */
+exports.getUserDetails = function* (req, res) {
+    let user = yield util.getUserIfExists(req.params.user_id);
+    res.json(user);
+}
+
+/**
  * save a new user
  * @param {*} req 
  * @param {*} res 

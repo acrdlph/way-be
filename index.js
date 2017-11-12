@@ -40,11 +40,8 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.get('/users/:user_id/details', (req, res) => co(function *() {
-        const userId = req.params.user_id;
-        const user = yield UserModel.findOne({_id: userId});
-        res.json(user);
-    })
+app.get('/users/:user_id/details', (req, res) => 
+    co(user_controller.getUserDetails)
     .catch(err => {
         console.info(err);
         res.send({error: err});
