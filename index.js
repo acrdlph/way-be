@@ -50,8 +50,8 @@ app.get('/users/:user_id/details', (req, res) => co(function *() {
        
 app.get('/users/:user_id', (req, res) => co(function *() {
        let users = yield UserModel.find({});
-       let messages = yield MessageModel.find({receiver_id: req.param.user_id});
-       let message_counts =
+       const userId = req.params.user_id;
+       let messages = yield MessageModel.find({receiver_id: userId});
        users = users.map((user) => {
                    return {
                        id: user._id,
@@ -63,9 +63,9 @@ app.get('/users/:user_id', (req, res) => co(function *() {
                                    .diff(new Date(), 'minutes'),
                        count: messages.filter(
                                                 message => message.sender_id == user._id &&
-                                                message.receiver_id == req.param.user_id).length
+                                                message.receiver_id == userId).length
                    }
-              }).filter(user => user.time_left > 0);
+              }).filter(user => (user.time_left > 0 && user.id != userId));
        res.json(users);
     })
     .catch(err => {
