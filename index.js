@@ -40,6 +40,17 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
+app.get('/users/:user_id/details', (req, res) => co(function *() {
+        const userId = req.params.user_id;
+        const user = yield UserModel.findOne({_id: userId});
+        res.json(user);
+    })
+    .catch(err => {
+        console.info(err);
+        res.send({error: err});
+    })
+);
+
 app.get('/users/:user_id', (req, res) =>
     co(user_controller.usersByUser(req, res))
     .catch(err => handleError(req, res, err))
@@ -55,12 +66,12 @@ app.put('/users/:id', (req, res) =>
     .catch(err => handleError(req, res, err))
 );
 
-app.get('/messages', (req, res) => 
+app.get('/messages', (req, res) =>
     co(message_controller.getMessagesBySenderAndReceiver(req, res))
     .catch(err => handleError(req, res, err))
 );
 
-app.ws('/messages/:user_id', (ws, req) => 
+app.ws('/messages/:user_id', (ws, req) =>
     co(message_controller.initWsConnection(ws, req))
     .catch(err => {console.info(err);})
 );

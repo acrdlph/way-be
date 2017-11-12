@@ -12,11 +12,11 @@ exports.createError = function(code, message) {
 
 exports.getUserIfExists = function* (id) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw util.createError(404, 'Invalid User Id');
+        throw this.createError(404, 'Invalid User Id');
     }
     let users = yield user_model.find({_id: id});
     if (!users.length) {
-        throw util.createError(404, 'User Not Found');
+        throw this.createError(404, 'User Not Found');
     }
     return users[0];
 }
