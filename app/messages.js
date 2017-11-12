@@ -13,19 +13,28 @@ let ws_connections = {};
  * @param {*} res 
  */
 exports.getMessagesBySenderAndReceiver = function* (req, res) {
-    let sender = yield util.getUserIfExists(req.query.sender_id);
-    let receiver = yield util.getUserIfExists(req.query.receiver_id);
-    let messages = yield message_model.find(
-        {
-            sender_id: req.query.sender_id,
-            receiver_id: req.query.receiver_id
-        }
+    //let sender = yield util.getUserIfExists(req.query.sender_id);
+    //let receiver = yield util.getUserIfExists(req.query.receiver_id);
+    let messages = yield message_model.find({
+        $or:
+            [
+                {
+                    sender_id: req.query.sender_id,
+                    receiver_id: req.query.receiver_id
+                },
+                {
+                    receiver_id: req.query.sender_id,
+                    sender_id: req.query.receiver_id
+                }
+            ]
+    }
     );
     messages = messages.map(message => {
         return {
             id: message._id,
             sender_id: message.sender_id,
             receiver_id: message.receiver_id,
+            message: message.message,
             created_at: message.created_at
         }
     });
