@@ -10,9 +10,9 @@ const util = require('./util');
  * @param {*} res 
  */
 exports.usersByUser = function* (req, res) {
-    yield util.getUserIfExists(req.params.user_id);
+    let given_user = yield util.getUserIfExists(req.params.user_id);
     let users = yield user_model.find({});
-    let messages = yield message_model.find({ receiver_id: req.params.user_id });
+    let messages = yield message_model.find({ receiver_id: given_user.id });
     users = users.map(user => {
         return {
             id: user._id,
@@ -23,10 +23,10 @@ exports.usersByUser = function* (req, res) {
                 .add(user.waiting_time, 'm')
                 .diff(new Date(), 'minutes'),
             count: messages.filter(
-                message => message.sender_id == user._id &&
-                    message.receiver_id == req.params.user_id).length
+                message => message.sender_id === user._id &&
+                    message.receiver_id === given_user.id).length
         }
-    }).filter(user => user.time_left > 0);
+    }).filter(user => user.time_left > 0 && user.id !== given_user.id);
     res.json(users);
 };
 
