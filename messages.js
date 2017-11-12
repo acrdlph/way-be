@@ -7,6 +7,11 @@ const util = require('./util');
 
 let ws_connections = {};
 
+/**
+ * Get messages between provided sender and receiver
+ * @param {*} req 
+ * @param {*} res 
+ */
 exports.getMessagesBySenderAndReceiver = function* (req, res) {
     let sender = yield util.getUserIfExists(req.query.sender_id);
     let receiver = yield util.getUserIfExists(req.query.receiver_id);
@@ -27,6 +32,11 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
     res.json(messages);
 }
 
+/**
+ * initialize a web socket connection
+ * @param {*} ws 
+ * @param {*} req 
+ */
 exports.initWsConnection = function* (ws, req) {
     console.log("user id ", req.user_id);
     ws.user_id = req.user_id;
