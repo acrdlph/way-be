@@ -21,7 +21,7 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
             receiver_id: req.query.receiver_id
         }
     );
-    messages = messages.map((message) => {
+    messages = messages.map(message => {
         return {
             id: message._id,
             sender_id: message.sender_id,
@@ -48,7 +48,7 @@ exports.initWsConnection = function* (ws, req) {
         }
     )
     if (undelivered_messages.length) {
-        undelivered_messages.forEach((msg) => co(function* () {
+        undelivered_messages.forEach(msg => co(function* () {
             ws_connections[req.user_id].send(JSON.stringify({
                 sender_id: msg.sender_id,
                 receiver_id: msg.receiver_id,
@@ -62,7 +62,7 @@ exports.initWsConnection = function* (ws, req) {
         }));
     }
 
-    ws.on('message', (msg) => co(function* () {
+    ws.on('message', msg => co(function* () {
         msg = JSON.parse(msg);
         //let sender = yield UserModel.findOne({_id: msg.sender_id});
         //let receiver = yield UserModel.findOne({_id: msg.receiver_id});
