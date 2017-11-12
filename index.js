@@ -41,11 +41,8 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.get('/', (req, res) => res.send('Hello World!'));
 
 app.get('/users/:user_id/details', (req, res) => 
-    co(user_controller.getUserDetails)
-    .catch(err => {
-        console.info(err);
-        res.send({error: err});
-    })
+    co(user_controller.getUserDetails(req, res))
+    .catch(err => handleError(req, res, err))
 );
 
 app.get('/users/:user_id', (req, res) =>
