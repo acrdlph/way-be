@@ -1,5 +1,9 @@
 #!/bin/sh
 
+DOCKER_LOGIN="$(aws ecr get-login --no-include-email --region eu-central-1)"
+
+$DOCKER_LOGIN
+
 echo "Building docker image"
 
 docker build -t waitlist-be .
