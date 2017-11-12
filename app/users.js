@@ -11,7 +11,7 @@ const util = require('./util');
  */
 exports.usersByUser = function* (req, res) {
     let given_user = yield util.getUserIfExists(req.params.user_id);
-    let users = yield user_model.find({});
+    let users = yield user_model.find({ location: given_user.location });
     let messages = yield message_model.find({ receiver_id: given_user.id });
     users = users.map(user => {
         return {
