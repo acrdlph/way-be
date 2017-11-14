@@ -20,4 +20,7 @@ echo "Pushing image to repo"
 
 docker push 614992511822.dkr.ecr.eu-central-1.amazonaws.com/waitlist-be:$CURRENT_HASH
 
-#echo "Deploying to eu-dev"
+echo "Deploying to eu-dev"
+
+./ecs-deploy-0ab06b -r eu-central-1 -c eu-dev -n waitlist-be-dev -i 614992511822.dkr.ecr.eu-central-1.amazonaws.com/waitlist-be:$CURRENT_HASH
+
