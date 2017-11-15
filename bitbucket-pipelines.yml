@@ -1,5 +1,7 @@
 image: node:6.11.0
 
+options:
+  docker: true
 pipelines:
   default:
     - step:
