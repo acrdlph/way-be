@@ -23,10 +23,10 @@ exports.usersByUser = function* (req, res) {
                 .add(user.waiting_time, 'm')
                 .diff(new Date(), 'minutes'),
             count: messages.filter(
-                message => message.sender_id === user._id &&
-                    message.receiver_id === given_user.id).length
+                message => message.sender_id == user._id &&
+                    message.receiver_id == given_user.id).length
         }
-    }).filter(user => user.time_left > 0 && user.id !== given_user.id);
+    }).filter(user => user.time_left > 0 && user.id != given_user.id);
     res.json(users);
 };
 
