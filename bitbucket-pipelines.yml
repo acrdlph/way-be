@@ -5,6 +5,7 @@ options:
 pipelines:
   default:
     - step:
+        max-time: 10
         script:
           - apt-get update && apt-get install -y python-dev
           - curl -O https://bootstrap.pypa.io/get-pip.py
