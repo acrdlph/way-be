@@ -8,5 +8,6 @@ pipelines:
           - curl -O https://bootstrap.pypa.io/get-pip.py
           - python get-pip.py
           - pip install awscli
+          - apt-get install jq
           - ./build_docker.sh
           
