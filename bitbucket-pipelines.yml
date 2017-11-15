@@ -1,0 +1,12 @@
+image: node:6.11.0
+
+pipelines:
+  default:
+    - step:
+        script:
+          - apt-get update && apt-get install -y python-dev
+          - curl -O https://bootstrap.pypa.io/get-pip.py
+          - python get-pip.py
+          - pip install awscli
+          - ./build_docker.sh
+          
