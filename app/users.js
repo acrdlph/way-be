@@ -19,9 +19,7 @@ exports.usersByUser = function* (req, res) {
             name: user.name,
             interests: user.interests,
             location: user.location,
-            time_left: moment(user.created_at)
-                .add(user.waiting_time, 'm')
-                .diff(new Date(), 'minutes'),
+            time_left: getMinTimeLeft(user, given_user),
             count: messages.filter(
                 message => message.sender_id == user._id &&
                     message.receiver_id == given_user.id).length
@@ -85,4 +83,13 @@ exports.updateUser = function* (req, res) {
         created_at: user.created_at
     });
 };
+
+function getMinTimeLeft(user1, user2) {
+    return Math.min(getTimeLeft(user1), getTimeLeft(user2));
+}
+
+function getTimeLeft(user) {
+    return moment(user.created_at).add(user.waiting_time, 'm')
+        .diff(new Date(), 'minutes');
+}
 
