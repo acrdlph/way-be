@@ -29,7 +29,11 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
             ]
     }
     );
-    messages = messages.map(message => {
+    messages = yield messages.map(message => co(function* () {
+        // this might not be a good solution because the client can ignore messages even though it downloads
+        // ideally the ui should make a call when the user actually sees the message to mark it as delivered
+        message.delivered = true;
+        yield message.save();
         return {
             id: message._id,
             sender_id: message.sender_id,
@@ -37,7 +41,9 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
             message: message.message,
             created_at: message.created_at
         }
-    });
+    }).catch(err => {
+        console.info(err);
+    }));
     res.json(messages);
 }
 
@@ -47,7 +53,7 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
  * @param {*} req 
  */
 exports.initWsConnection = function* (ws, req) {
-    console.log("user id ", req.user_id);
+    console.log("ws connection initiated by user ", req.user_id);
     ws.user_id = req.user_id;
     ws_connections[req.user_id] = ws;
     let undelivered_messages = yield message_model.find(
@@ -105,7 +111,7 @@ exports.initWsConnection = function* (ws, req) {
     // connection close - in the case of a cluster we need to have a background job running to 
     // deliver undelivered messages from the database periodically
     ws.on('close', function (connection) {
-        console.log(connection);
+        // console.log(connection);
         delete ws_connections[connection.user_id];
     });
 }

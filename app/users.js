@@ -14,15 +14,30 @@ exports.usersByUser = function* (req, res) {
     let users = yield user_model.find({ location: given_user.location });
     let messages = yield message_model.find({ receiver_id: given_user.id });
     users = users.map(user => {
+        let filtered_messages = messages.filter(message => message.sender_id == user._id &&
+                message.receiver_id == given_user.id);
+        let non_delivered_messages = messages.filter(message => !message.delivered);
+        // sort so that we can get the last contact time
+        filtered_messages.sort((message1, message2) => {
+            let message1_time = message1.created_at.getTime();
+            let message2_time = message2.created_at.getTime();
+            if (message1_time > message2_time) {
+                return -1;
+            }
+            if (message1_time < message2_time) {
+                return 1;
+            }
+            return 0;
+        });
         return {
             id: user._id,
             name: user.name,
             interests: user.interests,
             location: user.location,
             time_left: getMinTimeLeft(user, given_user),
-            count: messages.filter(
-                message => message.sender_id == user._id &&
-                    message.receiver_id == given_user.id).length
+            count: filtered_messages.length,
+            non_delivered_count: non_delivered_messages.length,
+            last_contact: filtered_messages.length > 0 ? filtered_messages[0].created_at : null
         }
     }).filter(user => user.time_left > 0 && user.id != given_user.id);
     res.json(users);
