@@ -7,8 +7,10 @@ let userSchema = new Schema({
   waiting_time: Number, // minutes
   interests: String,
   location: String,
+  geolocation: { type: { type: String }, coordinates: [ ] },
   created_at: Date
 });
+userSchema.index({ loc: '2dsphere' });
 
 let User = mongoose.model('User', userSchema);
 
