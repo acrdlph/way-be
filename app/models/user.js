@@ -10,7 +10,7 @@ let userSchema = new Schema({
   geolocation: { type: { type: String }, coordinates: [ ] },
   created_at: Date
 });
-userSchema.index({ loc: '2dsphere' });
+userSchema.index({ geolocation: '2dsphere' });
 
 let User = mongoose.model('User', userSchema);
 
