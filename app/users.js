@@ -16,7 +16,7 @@ exports.usersByUser = function* (req, res) {
     users = users.map(user => {
         let filtered_messages = messages.filter(message => message.sender_id == user._id &&
                 message.receiver_id == given_user.id);
-        let non_delivered_messages = messages.filter(message => !message.delivered);
+        let non_delivered_messages = filtered_messages.filter(message => message.delivered === false);
         // sort so that we can get the last contact time
         filtered_messages.sort((message1, message2) => {
             let message1_time = message1.created_at.getTime();
@@ -40,6 +40,7 @@ exports.usersByUser = function* (req, res) {
             last_contact: filtered_messages.length > 0 ? filtered_messages[0].created_at : null
         }
     }).filter(user => (user.time_left > 0 || user.count > 0) && user.id != given_user.id);
+    // console.log(users);
     res.json(users);
 };
 
