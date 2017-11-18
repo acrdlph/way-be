@@ -5,7 +5,7 @@ const moment = require('moment');
 const body_parser = require('body-parser');
 
 const user_controller = require('./users');
-const message_model = require('./models/message');
+const partner_controller = require('./partners');
 const message_controller = require('./messages');
 
 // Set up default mongoose connection
@@ -59,6 +59,11 @@ app.post('/users', (req, res) =>
 
 app.put('/users/:id', (req, res) =>
     co(user_controller.updateUser(req, res))
+    .catch(err => handleError(req, res, err))
+);
+
+app.post('/partners', (req, res) =>
+    co(partner_controller.savePartner(req, res))
     .catch(err => handleError(req, res, err))
 );
 
