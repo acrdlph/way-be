@@ -39,7 +39,7 @@ exports.usersByUser = function* (req, res) {
             non_delivered_count: non_delivered_messages.length,
             last_contact: filtered_messages.length > 0 ? filtered_messages[0].created_at : null
         }
-    }).filter(user => user.time_left > 0 && user.id != given_user.id);
+    }).filter(user => (user.time_left > 0 || user.count > 0) && user.id != given_user.id);
     res.json(users);
 };
 
