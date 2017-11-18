@@ -28,3 +28,8 @@ exports.savePartner = function* (req, res) {
     yield new_partner.save();
     res.send(new_partner);
 };
+
+exports.getAllPartners = function* (req, res) {
+    let partners = yield partner_model.find({});
+    res.json(partners);
+}

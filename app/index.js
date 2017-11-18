@@ -62,6 +62,11 @@ app.put('/users/:id', (req, res) =>
     .catch(err => handleError(req, res, err))
 );
 
+app.get('/partners', (req, res) =>
+    co(partner_controller.getAllPartners(req, res))
+    .catch(err => handleError(req, res, err))
+);
+
 app.post('/partners', (req, res) =>
     co(partner_controller.savePartner(req, res))
     .catch(err => handleError(req, res, err))
