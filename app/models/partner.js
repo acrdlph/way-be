@@ -1,3 +1,4 @@
+const geojson = require('mongoose-geojson-schema');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -6,7 +7,7 @@ let partnerSchema = new Schema({
   industry: String,
   location: String,
   unique_key: { type: String, unique: true },
-  geolocation: { type: { type: String }, coordinates: [ ] },
+  geolocation: Schema.Types.Point,
   created_at: Date
 });
 partnerSchema.index({ geolocation: '2dsphere' });

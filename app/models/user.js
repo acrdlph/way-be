@@ -1,3 +1,4 @@
+const geojson = require('mongoose-geojson-schema');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -8,10 +9,9 @@ let userSchema = new Schema({
   waiting_time: Number, // minutes
   interests: String,
   location: String,
-  geolocation: { type: { type: String }, coordinates: [ ] },
+  geolocation: Schema.Types.Point,
   created_at: Date
 });
-
 userSchema.index({ geolocation: '2dsphere' });
 
 let User = mongoose.model('User', userSchema);
