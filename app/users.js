@@ -105,6 +105,12 @@ exports.saveUser = function* (req, res) {
         if (partners_nearby.length) {
             location = partners_nearby[0].location;
         }
+    } else {
+        // south pole
+        geolocation = {
+            type: 'Point',
+            coordinates: [ 0, 90]
+        };
     }
     let new_user = new user_model(
         {
@@ -112,7 +118,7 @@ exports.saveUser = function* (req, res) {
             default_name: USER_DEFAULT_NAME,
             waiting_time: waiting_time,
             location: location,
-            geolocation: longtitude && latitude ? geolocation : null,
+            geolocation: geolocation,
             created_at: new Date()
         });
     yield new_user.save();
