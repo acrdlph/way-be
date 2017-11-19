@@ -67,6 +67,7 @@ exports.getUserDetails = function* (req, res) {
 exports.saveUser = function* (req, res) {
     let location = req.body.location;
     let geolocation = req.body.geolocation;
+    let name = req.body.name;
     let waiting_time = req.body.waiting_time;
     if ((!location && !geolocation) || !waiting_time) throw new Error("Can not save user");
     let longtitude = _.get(geolocation, 'longtitude');
@@ -74,6 +75,7 @@ exports.saveUser = function* (req, res) {
     // TODO search the nearest partner if long-lat is sent and populate location
     let new_user = new user_model(
         {
+            name: name,
             waiting_time: waiting_time,
             location: location,
             geolocation: longtitude && latitude ? {
