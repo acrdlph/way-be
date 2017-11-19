@@ -2,6 +2,7 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const _ = require('lodash');
 const user_model = require('./models/user');
+const geo_user_model = require('./models/geo_user');
 const message_model = require('./models/message');
 const partner_model = require('./models/partner');
 const util = require('./util');
@@ -21,15 +22,16 @@ exports.usersByUser = function* (req, res) {
     let same_location_users = yield user_model.find({
         location: given_user.location
     });
-    let geo_near_users = yield user_model.find({ 
-        geolocation: {
-            $nearSphere: {
-                $geometry: given_user.geolocation,
-                $maxDistance: USER_NEAR_BY_DISTANCE
-            }
-        }
-    });
-    let users = _.uniqBy(_.flatten([same_location_users, geo_near_users]), user1 => user1.id);
+    let geo_near_users = [];
+    if (given_user.geolocation) {
+        geo_near_users = yield geo_user_model.find()
+            .where('geolocation').near({
+                center: given_user.geolocation,
+                maxDistance: USER_NEAR_BY_DISTANCE
+            })
+            .exec();
+    }
+    let users = _.uniqBy(_.flatten([geo_near_users, same_location_users]), user1 => user1.id);
     let messages = yield message_model.find({ receiver_id: given_user.id });
     users = users.map(user => {
         let filtered_messages = messages.filter(message => message.sender_id == user.id &&
@@ -108,7 +110,7 @@ exports.saveUser = function* (req, res) {
     } else {
         geolocation = null;
     }
-    let new_user = new user_model(
+    let new_user = new geo_user_model(
         {
             name: name,
             default_name: USER_DEFAULT_NAME,

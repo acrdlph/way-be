@@ -1,6 +1,6 @@
 const moment = require('moment');
 const mongoose = require('mongoose');
-const user_model = require('./models/user');
+const user_model = require('./models/geo_user');
 const message_model = require('./models/message');
 
 /**
