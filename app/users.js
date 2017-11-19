@@ -1,9 +1,11 @@
 const moment = require('moment');
 const mongoose = require('mongoose');
+const _ = require('lodash');
 const user_model = require('./models/user');
 const message_model = require('./models/message');
 const util = require('./util');
-const _ = require('lodash');
+
+const USER_DEFAULT_NAME = 'Still Anonymous';
 
 /**
  * get users from the perspective of a given user
@@ -33,6 +35,7 @@ exports.usersByUser = function* (req, res) {
         return {
             id: user._id,
             name: user.name,
+            default_name: user.default_name,
             interests: user.interests,
             location: user.location,
             geolocation: {
@@ -76,6 +79,7 @@ exports.saveUser = function* (req, res) {
     let new_user = new user_model(
         {
             name: name,
+            default_name: USER_DEFAULT_NAME,
             waiting_time: waiting_time,
             location: location,
             geolocation: longtitude && latitude ? {
@@ -114,6 +118,7 @@ function mapUserOutput(user) {
     return {
         id: user.id,
         name: user.name,
+        default_name: user.default_name,
         interests: user.interests,
         waiting_time: user.waiting_time,
         location: user.location,

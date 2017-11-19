@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 // create a schema
 let userSchema = new Schema({
   name: String,
+  default_name: String, 
   waiting_time: Number, // minutes
   interests: String,
   location: String,
