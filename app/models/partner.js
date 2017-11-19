@@ -5,6 +5,7 @@ let partnerSchema = new Schema({
   name: String,
   industry: String,
   location: String,
+  unique_key: { type: String, unique: true },
   geolocation: { type: { type: String }, coordinates: [ ] },
   created_at: Date
 });

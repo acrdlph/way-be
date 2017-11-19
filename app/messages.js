@@ -42,7 +42,7 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
             created_at: message.created_at
         }
     }).catch(err => {
-        console.info(err);
+        throw new util.createError(500, err.getMessage());
     }));
     res.json(messages);
 }
