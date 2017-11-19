@@ -15,7 +15,7 @@ exports.savePartner = function* (req, res) {
     let industry = req.body.industry;
     if ((!location && !geolocation) || !name || !unique_key) 
         throw new util.createError(400, 'Please provide name, unique_key and one of the fields location or geolocation');
-    let longtitude = _.get(geolocation, 'longtitude');
+    let longitude = _.get(geolocation, 'longitude');
     let latitude = _.get(geolocation, 'latitude');
     let existing_partner = yield partner_model.find({unique_key: unique_key});
     if (existing_partner.length) 
@@ -26,9 +26,9 @@ exports.savePartner = function* (req, res) {
             unique_key: unique_key,
             industry: industry,
             location: location,
-            geolocation: longtitude && latitude ? {
+            geolocation: longitude && latitude ? {
                 type: 'Point',
-                coordinates: [ parseFloat(longtitude), parseFloat(latitude) ]
+                coordinates: [ parseFloat(longitude), parseFloat(latitude) ]
             } : null,
             created_at: new Date()
         });

@@ -54,7 +54,7 @@ exports.usersByUser = function* (req, res) {
             interests: user.interests,
             location: user.location,
             geolocation: {
-                longtitude: _.get(user, 'geolocation.coordinates.0'),
+                longitude: _.get(user, 'geolocation.coordinates.0'),
                 latitude: _.get(user, 'geolocation.coordinates.1')
             },
             time_left: getMinTimeLeft(user, given_user),
@@ -87,12 +87,12 @@ exports.saveUser = function* (req, res) {
     let name = req.body.name;
     let waiting_time = req.body.waiting_time;
     if ((!location && !geolocation) || !waiting_time) throw new Error("Can not save user");
-    let longtitude = _.get(geolocation, 'longtitude');
+    let longitude = _.get(geolocation, 'longitude');
     let latitude = _.get(geolocation, 'latitude');
-    if (longtitude && latitude) {
+    if (longitude && latitude) {
         geolocation = {
             type: 'Point',
-            coordinates: [ parseFloat(longtitude), parseFloat(latitude) ]
+            coordinates: [ parseFloat(longitude), parseFloat(latitude) ]
         };
         let partners_nearby = yield partner_model.find({
             geolocation: {
@@ -132,7 +132,7 @@ exports.updateUser = function* (req, res) {
     user.geolocation = req.body.geolocation ? {
         type: 'Point',
         coordinates: [
-            parseFloat(req.body.geolocation.longtitude),
+            parseFloat(req.body.geolocation.longitude),
             parseFloat(req.body.geolocation.latitude)
         ]
     } : user.geolocation;
@@ -152,7 +152,7 @@ function mapUserOutput(user) {
         waiting_time: user.waiting_time,
         location: user.location,
         geolocation: {
-            longtitude: _.get(user, 'geolocation.coordinates.0'),
+            longitude: _.get(user, 'geolocation.coordinates.0'),
             latitude: _.get(user, 'geolocation.coordinates.1')
         },
         created_at: user.created_at
