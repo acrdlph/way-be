@@ -67,6 +67,11 @@ app.get('/partners', (req, res) =>
     .catch(err => handleError(req, res, err))
 );
 
+app.get('/partners/search', (req, res) =>
+co(partner_controller.searchPartners(req, res))
+.catch(err => handleError(req, res, err))
+);
+
 app.post('/partners', (req, res) =>
     co(partner_controller.savePartner(req, res))
     .catch(err => handleError(req, res, err))

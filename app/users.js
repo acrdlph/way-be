@@ -3,9 +3,12 @@ const mongoose = require('mongoose');
 const _ = require('lodash');
 const user_model = require('./models/user');
 const message_model = require('./models/message');
+const partner_model = require('./models/partner');
 const util = require('./util');
 
 const USER_DEFAULT_NAME = 'Still Anonymous';
+const USER_NEAR_BY_DISTANCE = 5000; // 5km
+const PARTNER_NEAR_BY_DISTANCE = 50000; // 50km
 
 /**
  * get users from the perspective of a given user
@@ -14,10 +17,22 @@ const USER_DEFAULT_NAME = 'Still Anonymous';
  */
 exports.usersByUser = function* (req, res) {
     let given_user = yield util.getUserIfExists(req.params.user_id);
-    let users = yield user_model.find({ location: given_user.location });
+    // we can not do $or here because mondb does not support $or for geo queries
+    let same_location_users = yield user_model.find({
+        location: given_user.location
+    });
+    let geo_near_users = yield user_model.find({ 
+        geolocation: {
+            $nearSphere: {
+                $geometry: given_user.geolocation,
+                $maxDistance: USER_NEAR_BY_DISTANCE
+            }
+        }
+    });
+    let users = _.uniqBy(_.flatten([same_location_users, geo_near_users]), user1 => user1.id);
     let messages = yield message_model.find({ receiver_id: given_user.id });
     users = users.map(user => {
-        let filtered_messages = messages.filter(message => message.sender_id == user._id &&
+        let filtered_messages = messages.filter(message => message.sender_id == user.id &&
                 message.receiver_id == given_user.id);
         let non_delivered_messages = filtered_messages.filter(message => message.delivered === false);
         // sort so that we can get the last contact time
@@ -33,7 +48,7 @@ exports.usersByUser = function* (req, res) {
             return 0;
         });
         return {
-            id: user._id,
+            id: user.id,
             name: user.name,
             default_name: user.default_name,
             interests: user.interests,
@@ -48,7 +63,6 @@ exports.usersByUser = function* (req, res) {
             last_contact: filtered_messages.length > 0 ? filtered_messages[0].created_at : null
         }
     }).filter(user => (user.time_left > 0 || user.count > 0) && user.id != given_user.id);
-    // console.log(users);
     res.json(users);
 };
 
@@ -75,17 +89,30 @@ exports.saveUser = function* (req, res) {
     if ((!location && !geolocation) || !waiting_time) throw new Error("Can not save user");
     let longtitude = _.get(geolocation, 'longtitude');
     let latitude = _.get(geolocation, 'latitude');
-    // TODO search the nearest partner if long-lat is sent and populate location
+    if (longtitude && latitude) {
+        geolocation = {
+            type: 'Point',
+            coordinates: [ parseFloat(longtitude), parseFloat(latitude) ]
+        };
+        let partners_nearby = yield partner_model.find({
+            geolocation: {
+                $nearSphere: {
+                    $geometry: geolocation,
+                    $maxDistance: PARTNER_NEAR_BY_DISTANCE
+                }
+            }
+        });
+        if (partners_nearby.length) {
+            location = partners_nearby[0].location;
+        }
+    }
     let new_user = new user_model(
         {
             name: name,
             default_name: USER_DEFAULT_NAME,
             waiting_time: waiting_time,
             location: location,
-            geolocation: longtitude && latitude ? {
-                type: 'Point',
-                coordinates: [ parseFloat(longtitude), parseFloat(latitude) ]
-            } : null,
+            geolocation: longtitude && latitude ? geolocation : null,
             created_at: new Date()
         });
     yield new_user.save();

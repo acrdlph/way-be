@@ -36,6 +36,14 @@ exports.savePartner = function* (req, res) {
     res.send(new_partner);
 };
 
+exports.savePartnersForGeoQuery = function* (req, res){
+    // TODO call http://www.geonames.org/export/ws-overview.html to get this
+}
+
+exports.searchPartners = function* (req, res){
+    // TODO send the list of partners for the query
+}
+
 exports.getAllPartners = function* (req, res) {
     let partners = yield partner_model.find({});
     res.json(partners);
