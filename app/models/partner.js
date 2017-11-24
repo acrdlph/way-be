@@ -2,7 +2,7 @@ const geojson = require('mongoose-geojson-schema');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-let partnerSchema = new Schema({
+const partnerSchema = new Schema({
   name: String,
   industry: String,
   location: String,
@@ -12,6 +12,6 @@ let partnerSchema = new Schema({
 });
 partnerSchema.index({ geolocation: '2dsphere' });
 
-let Partner = mongoose.model('Partner', partnerSchema);
+const Partner = mongoose.model('Partner', partnerSchema);
 
 module.exports = Partner;

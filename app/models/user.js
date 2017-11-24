@@ -2,7 +2,7 @@ const geojson = require('mongoose-geojson-schema');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-let userSchema = new Schema({
+const userSchema = new Schema({
   name: String,
   default_name: String, 
   waiting_time: Number, // minutes
@@ -11,6 +11,6 @@ let userSchema = new Schema({
   created_at: Date
 });
 
-let User = mongoose.model('User', userSchema, 'users');
+const User = mongoose.model('User', userSchema, 'users');
 
 module.exports = User;

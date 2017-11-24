@@ -2,7 +2,7 @@ const geojson = require('mongoose-geojson-schema');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-let geoUserSchema = new Schema({
+const geoUserSchema = new Schema({
   name: String,
   default_name: String, 
   waiting_time: Number, // minutes
@@ -13,6 +13,6 @@ let geoUserSchema = new Schema({
 });
 geoUserSchema.index({ geolocation: '2dsphere' });
 
-let GeoUser = mongoose.model('GeoUser', geoUserSchema, 'users');
+const GeoUser = mongoose.model('GeoUser', geoUserSchema, 'users');
 
 module.exports = GeoUser;

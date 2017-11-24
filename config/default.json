@@ -1,0 +1,9 @@
+{
+    "database": {
+        "host": "ds257245.mlab.com",
+        "port": 57245,
+        "user": "waitlist",
+        "password": "waitlist",
+        "name": "waitlist"
+    }
+}

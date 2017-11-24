@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 // create a schema
-let messageSchema = new Schema({
+const messageSchema = new Schema({
   sender_id: String,
   receiver_id: String,
   message: String,
@@ -10,6 +10,6 @@ let messageSchema = new Schema({
   delivered: Boolean
 });
 
-let Message = mongoose.model('Message', messageSchema);
+const Message = mongoose.model('Message', messageSchema);
 
 module.exports = Message;

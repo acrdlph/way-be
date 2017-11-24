@@ -17,9 +17,9 @@ const PARTNER_NEAR_BY_DISTANCE = 50000; // 50km
  * @param {*} res 
  */
 exports.usersByUser = function* (req, res) {
-    let given_user = yield util.getUserIfExists(req.params.user_id);
+    const given_user = yield util.getUserIfExists(req.params.user_id);
     // we can not do $or here because mondb does not support $or for geo queries
-    let same_location_users = yield user_model.find({
+    const same_location_users = yield user_model.find({
         location: given_user.location
     });
     let geo_near_users = [];
@@ -32,15 +32,15 @@ exports.usersByUser = function* (req, res) {
             .exec();
     }
     let users = _.uniqBy(_.flatten([geo_near_users, same_location_users]), user1 => user1.id);
-    let messages = yield message_model.find({ receiver_id: given_user.id });
+    const messages = yield message_model.find({ receiver_id: given_user.id });
     users = users.map(user => {
-        let filtered_messages = messages.filter(message => message.sender_id == user.id &&
+        const filtered_messages = messages.filter(message => message.sender_id == user.id &&
                 message.receiver_id == given_user.id);
-        let non_delivered_messages = filtered_messages.filter(message => message.delivered === false);
+        const non_delivered_messages = filtered_messages.filter(message => message.delivered === false);
         // sort so that we can get the last contact time
         filtered_messages.sort((message1, message2) => {
-            let message1_time = message1.created_at.getTime();
-            let message2_time = message2.created_at.getTime();
+            const message1_time = message1.created_at.getTime();
+            const message2_time = message2.created_at.getTime();
             if (message1_time > message2_time) {
                 return -1;
             }
@@ -74,7 +74,7 @@ exports.usersByUser = function* (req, res) {
  * @param {*} res 
  */
 exports.getUserDetails = function* (req, res) {
-    let user = yield util.getUserIfExists(req.params.user_id);
+    const user = yield util.getUserIfExists(req.params.user_id);
     res.json(mapUserOutput(user));
 }
 
@@ -86,17 +86,17 @@ exports.getUserDetails = function* (req, res) {
 exports.saveUser = function* (req, res) {
     let location = req.body.location;
     let geolocation = req.body.geolocation;
-    let name = req.body.name;
-    let waiting_time = req.body.waiting_time;
+    const name = req.body.name;
+    const waiting_time = req.body.waiting_time;
     if ((!location && !geolocation) || !waiting_time) throw new Error("Can not save user");
-    let longitude = _.get(geolocation, 'longitude');
-    let latitude = _.get(geolocation, 'latitude');
+    const longitude = _.get(geolocation, 'longitude');
+    const latitude = _.get(geolocation, 'latitude');
     if (longitude && latitude) {
         geolocation = {
             type: 'Point',
             coordinates: [ parseFloat(longitude), parseFloat(latitude) ]
         };
-        let partners_nearby = yield partner_model.find({
+        const partners_nearby = yield partner_model.find({
             geolocation: {
                 $nearSphere: {
                     $geometry: geolocation,
@@ -110,7 +110,7 @@ exports.saveUser = function* (req, res) {
     } else {
         geolocation = null;
     }
-    let new_user = new geo_user_model(
+    const new_user = new geo_user_model(
         {
             name: name,
             default_name: USER_DEFAULT_NAME,
@@ -129,7 +129,7 @@ exports.saveUser = function* (req, res) {
  * @param {*} res 
  */
 exports.updateUser = function* (req, res) {
-    let user = yield util.getUserIfExists(req.params.id);
+    const user = yield util.getUserIfExists(req.params.id);
     user.location = req.body.location || user.location;
     user.geolocation = req.body.geolocation ? {
         type: 'Point',

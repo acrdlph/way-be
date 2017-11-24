@@ -4,14 +4,16 @@ const co = require('co');
 const moment = require('moment');
 const body_parser = require('body-parser');
 
+const config = require('./config');
+const logger = require('./logger');
 const user_controller = require('./users');
 const partner_controller = require('./partners');
 const message_controller = require('./messages');
 
 // Set up default mongoose connection
-let mongo_db = 'mongodb://waitlist:waitlist@ds257245.mlab.com:57245/waitlist';
+const mongo_db = `mongodb://${config.get('database.user')}:${config.get('database.password')}@${config.get('database.host')}:${config.get('database.port')}/${config.get('database.name')}`;
 
-let ws_connections = {};
+const ws_connections = {};
 
 mongoose.Promise = global.Promise;
 mongoose.connect(mongo_db, {
@@ -19,12 +21,12 @@ mongoose.connect(mongo_db, {
 });
 
 //Get the default connection
-let db = mongoose.connection;
+const db = mongoose.connection;
 
 //Bind connection to error event (to get notification of connection errors)
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-let app = express();
+const app = express();
 const express_ws = require('express-ws')(app);
 
 // this is required for websocket url params by expressWs
@@ -35,6 +37,7 @@ app.param('user_id', function (req, res, next, user_id) {
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    logger.logRequest(req);
     next();
 });
 app.use(body_parser.json()); // support json encoded bodies
@@ -87,7 +90,7 @@ app.ws('/messages/:user_id', (ws, req) =>
     .catch(err => {console.info(err);})
 );
 
-app.listen(3001, () => console.log('Waitlist API listening on port 3001!'));
+app.listen(3001, () => logger.info('Waitlist API listening on port 3001!'));
 
 function handleError(req, res, err) {
     console.error(err.stack)

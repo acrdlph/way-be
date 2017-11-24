@@ -4,8 +4,9 @@ const moment = require('moment');
 const user_model = require('./models/user');
 const message_model = require('./models/message');
 const util = require('./util');
+const logger = require('./logger');
 
-let ws_connections = {};
+const ws_connections = {};
 
 /**
  * Get messages between provided sender and receiver
@@ -13,8 +14,8 @@ let ws_connections = {};
  * @param {*} res 
  */
 exports.getMessagesBySenderAndReceiver = function* (req, res) {
-    //let sender = yield util.getUserIfExists(req.query.sender_id);
-    //let receiver = yield util.getUserIfExists(req.query.receiver_id);
+    //const sender = yield util.getUserIfExists(req.query.sender_id);
+    //const receiver = yield util.getUserIfExists(req.query.receiver_id);
     let messages = yield message_model.find({
         $or:
             [
@@ -56,7 +57,7 @@ exports.initWsConnection = function* (ws, req) {
     console.log("ws connection initiated by user ", req.user_id);
     ws.user_id = req.user_id;
     ws_connections[req.user_id] = ws;
-    let undelivered_messages = yield message_model.find(
+    const undelivered_messages = yield message_model.find(
         {
             receiver_id: req.user_id,
             delivered: false
@@ -102,7 +103,7 @@ exports.initWsConnection = function* (ws, req) {
                 message: msg.message
             }));
         }
-        let new_message = new message_model(msg);
+        const new_message = new message_model(msg);
         yield new_message.save();
     }).catch(err => {
         console.info(err);

@@ -4,7 +4,8 @@
   "description": "Waitlist API",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "local": "nodemon app/index.js | ./node_modules/.bin/bunyan"
   },
   "repository": {
     "type": "git",
@@ -15,12 +16,15 @@
   "homepage": "https://bitbucket.org/waitlistteam/waitlist-be#readme",
   "dependencies": {
     "body-parser": "^1.18.2",
+    "bunyan": "^1.8.12",
     "co": "^4.6.0",
+    "config": "^1.28.1",
     "express": "^4.16.2",
     "express-ws": "^3.0.0",
     "lodash": "^4.17.4",
     "moment": "^2.19.1",
     "mongoose": "^4.13.1",
-    "mongoose-geojson-schema": "^2.1.2"
+    "mongoose-geojson-schema": "^2.1.2",
+    "winston": "^2.4.0"
   }
 }

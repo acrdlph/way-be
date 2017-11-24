@@ -4,7 +4,7 @@
 - Clone this repo.
 - Run `npm install`
 - Install auto reload server `npm install -g nodemon`
-- To start server run `nodemon ./app/index.js`
+- To start server run `npm start local`
 
 ### Running locally with docker
 
