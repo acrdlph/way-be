@@ -93,6 +93,6 @@ app.ws('/messages/:user_id', (ws, req) =>
 app.listen(3001, () => logger.info('Waitlist API listening on port 3001!'));
 
 function handleError(req, res, err) {
-    console.error(err.stack)
+    logger.error(err.stack);
     res.status(err.code || 500).json({message: err.message});
 }
