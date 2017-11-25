@@ -24,7 +24,6 @@
     "lodash": "^4.17.4",
     "moment": "^2.19.1",
     "mongoose": "^4.13.1",
-    "mongoose-geojson-schema": "^2.1.2",
-    "winston": "^2.4.0"
+    "mongoose-geojson-schema": "^2.1.2"
   }
 }

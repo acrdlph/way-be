@@ -12,13 +12,13 @@ const message_controller = require('./messages');
 
 // Set up default mongoose connection
 const mongo_db = `mongodb://${config.get('database.user')}:${config.get('database.password')}@${config.get('database.host')}:${config.get('database.port')}/${config.get('database.name')}`;
-
-const ws_connections = {};
-
 mongoose.Promise = global.Promise;
 mongoose.connect(mongo_db, {
     useMongoClient: true
 });
+
+// web socket connections
+const ws_connections = {};
 
 //Get the default connection
 const db = mongoose.connection;

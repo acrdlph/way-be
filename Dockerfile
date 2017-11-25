@@ -2,12 +2,12 @@ FROM node:6.11.0
 
 COPY app /app
 
+COPY config /config
+
 COPY package.json /app/package.json
 
-WORKDIR /app
-
-RUN npm install
+RUN npm install --prefix /app
 
 EXPOSE 3001
 
-CMD node index.js
+CMD node app/index.js
