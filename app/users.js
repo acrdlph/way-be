@@ -87,8 +87,8 @@ exports.saveUser = function* (req, res) {
     let location = req.body.location;
     let geolocation = req.body.geolocation;
     const name = req.body.name;
-    const waiting_time = req.body.waiting_time;
-    if ((!location && !geolocation) || !waiting_time) throw new Error("Can not save user");
+    const waiting_time = req.body.waiting_time || 30; // default 30 mins
+    if (!location && !geolocation) throw util.createError(400, "Please provide a location");
     const longitude = _.get(geolocation, 'longitude');
     const latitude = _.get(geolocation, 'latitude');
     if (longitude && latitude) {
