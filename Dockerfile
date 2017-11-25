@@ -10,4 +10,4 @@ RUN npm install --prefix /app
 
 EXPOSE 3001
 
-CMD node app/index.js
+CMD node /app/index.js
