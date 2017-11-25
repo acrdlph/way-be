@@ -33,7 +33,7 @@ exports.savePartner = function* (req, res) {
             created_at: new Date()
         });
     yield new_partner.save();
-    res.send(new_partner);
+    res.json(new_partner);
 };
 
 exports.savePartnersForGeoQuery = function* (req, res){
