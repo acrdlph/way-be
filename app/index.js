@@ -66,12 +66,10 @@ app.put('/users/:id', (req, res) =>
     .catch(err => handleError(req, res, err))
 );
 
-app.post('/users/:user_id/photo', uploader.user_upload.single('photo'), function (req, res, next) {
-    // req.file is the `avatar` file
-    // req.body will hold the text fields, if there were any
-    res.send('Successfully uploaded');
-    next();
-});
+app.post('/users/:user_id/photo', uploader.user_upload.single('photo'), (req, res) =>
+    co(user_controller.updatePhoto(req, res))
+    .catch(err => handleError(req, res, err))
+);
 
 app.get('/partners', (req, res) =>
     co(partner_controller.getAllPartners(req, res))

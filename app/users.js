@@ -7,10 +7,13 @@ const geo_user_model = require('./models/geo_user');
 const message_model = require('./models/message');
 const partner_model = require('./models/partner');
 const util = require('./util');
+const config = require('./config');
 
 const USER_DEFAULT_NAME = 'Still Anonymous';
 const USER_NEAR_BY_DISTANCE = 5000; // 5km
 const PARTNER_NEAR_BY_DISTANCE = 50000; // 50km
+const S3_USER_PHOTO_URL = (user, filename) => 
+`https://s3.${config.get('s3.users_bucket.region')}.amazonaws.com/${config.get('s3.users_bucket.name')}/${user.id}/${filename}`
 
 /**
  * get users from the perspective of a given user
@@ -56,6 +59,7 @@ exports.usersByUser = function* (req, res) {
             default_name: user.default_name,
             interests: user.interests,
             location: user.location,
+            photo: user.photo,
             geolocation: {
                 longitude: _.get(user, 'geolocation.coordinates.0'),
                 latitude: _.get(user, 'geolocation.coordinates.1')
@@ -146,6 +150,13 @@ exports.updateUser = function* (req, res) {
     res.send(mapUserOutput(user));
 };
 
+exports.updatePhoto = function* (req, res) {
+    const user = yield util.getUserIfExists(req.params.user_id);
+    user.photo = S3_USER_PHOTO_URL(user, req.file.standard_name);
+    yield user.save();
+    res.send(mapUserOutput(user));
+};
+
 function mapUserOutput(user) {
     return {
         id: user.id,
@@ -154,6 +165,7 @@ function mapUserOutput(user) {
         interests: user.interests,
         waiting_time: user.waiting_time,
         location: user.location,
+        photo: user.photo,
         geolocation: {
             longitude: _.get(user, 'geolocation.coordinates.0'),
             latitude: _.get(user, 'geolocation.coordinates.1')

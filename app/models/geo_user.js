@@ -8,6 +8,7 @@ const geoUserSchema = new Schema({
   waiting_time: Number, // minutes
   interests: String,
   location: String,
+  photo: String,
   geolocation: Schema.Types.Point,
   created_at: Date
 });

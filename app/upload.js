@@ -21,10 +21,11 @@ exports.user_upload = multer({
         key: (req, file, cb) => {
             co(function* () {
                 const user = yield util.getUserIfExists(req.params.user_id);
-                cb(null, user.id + '/' + 'profile.' + mimetypes.extension(file.mimetype))
+                file.standard_name = 'profile.' + mimetypes.extension(file.mimetype);
+                cb(null, user.id + '/' + file.standard_name);
             }).catch((e) => {
                 logger.error(e);
-                cb(e)
+                cb(e);
             });
         }
     })

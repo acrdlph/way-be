@@ -8,6 +8,7 @@ const userSchema = new Schema({
   waiting_time: Number, // minutes
   interests: String,
   location: String,
+  photo: String,
   created_at: Date
 });
 
