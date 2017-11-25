@@ -125,7 +125,7 @@ exports.saveUser = function* (req, res) {
             created_at: new Date()
         });
     yield new_user.save();
-    res.send(mapUserOutput(new_user));
+    res.json(mapUserOutput(new_user));
 };
 
 /**
@@ -147,14 +147,14 @@ exports.updateUser = function* (req, res) {
     user.name = req.body.name || user.name;
     user.interests = req.body.interests || user.interests;
     yield user.save();
-    res.send(mapUserOutput(user));
+    res.json(mapUserOutput(user));
 };
 
 exports.updatePhoto = function* (req, res) {
     const user = yield util.getUserIfExists(req.params.user_id);
     user.photo = S3_USER_PHOTO_URL(user, req.file.standard_name);
     yield user.save();
-    res.send(mapUserOutput(user));
+    res.json(mapUserOutput(user));
 };
 
 function mapUserOutput(user) {
