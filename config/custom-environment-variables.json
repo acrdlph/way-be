@@ -1,0 +1,8 @@
+{
+    "s3": {
+        "users_bucket": {
+            "name": "S3_USERS_DIRECTORY",
+            "region": "S3_USERS_REGION"
+        }
+    }
+}

@@ -5,5 +5,12 @@
         "user": "waitlist",
         "password": "waitlist",
         "name": "waitlist"
+    },
+    "s3": {
+        "users_bucket": {
+            "name": "waitlist-users-dev",
+            "acl": "public-read",
+            "region": "eu-central-1"
+        }
     }
 }

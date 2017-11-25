@@ -9,6 +9,7 @@ const logger = require('./logger');
 const user_controller = require('./users');
 const partner_controller = require('./partners');
 const message_controller = require('./messages');
+const uploader = require('./upload');
 
 // Set up default mongoose connection
 const mongo_db = `mongodb://${config.get('database.user')}:${config.get('database.password')}@${config.get('database.host')}:${config.get('database.port')}/${config.get('database.name')}`;
@@ -64,6 +65,13 @@ app.put('/users/:id', (req, res) =>
     co(user_controller.updateUser(req, res))
     .catch(err => handleError(req, res, err))
 );
+
+app.post('/users/:user_id/photo', uploader.user_upload.single('photo'), function (req, res, next) {
+    // req.file is the `avatar` file
+    // req.body will hold the text fields, if there were any
+    res.send('Successfully uploaded');
+    next();
+});
 
 app.get('/partners', (req, res) =>
     co(partner_controller.getAllPartners(req, res))
