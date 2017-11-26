@@ -9,6 +9,11 @@ const util = require('./util');
  */
 exports.savePartner = function* (req, res) {
     const name = req.body.name;
+    const city = req.body.city;
+    const region = req.body.region;
+    const country = req.body.country;
+    const countryCode = req.body.country_code;
+    const matching_key = req.body.matching_key;
     const unique_key = req.body.unique_key;
     const location = req.body.location;
     const geolocation = req.body.geolocation;
@@ -23,6 +28,11 @@ exports.savePartner = function* (req, res) {
     const new_partner = new partner_model(
         {
             name: name,
+            city: req.body.city,
+            region: req.body.region,
+            country: req.body.country,
+            countryCode: req.body.country_code,
+            matching_key: req.body.matching_key,
             unique_key: unique_key,
             industry: industry,
             location: location,

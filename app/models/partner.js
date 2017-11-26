@@ -6,7 +6,12 @@ const partnerSchema = new Schema({
   name: String,
   industry: String,
   location: String,
-  unique_key: { type: String, unique: true },
+  city: String,
+  region: String,
+  country: String,
+  countryCode: String,
+  matching_key: String, // for cases where we have to match a group of locations to the same user location eg: Ubahn line
+  unique_key: { type: String, unique: true }, // definite unique key
   geolocation: Schema.Types.Point,
   created_at: Date
 });

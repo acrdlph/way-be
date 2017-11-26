@@ -77,7 +77,7 @@ app.get('/partners', (req, res) =>
 );
 
 app.get('/partners/search', (req, res) =>
-co(partner_controller.searchPartners(req, res))
+co(partner_controller.savePartnersForGeoQuery(req, res))
 .catch(err => handleError(req, res, err))
 );
 
