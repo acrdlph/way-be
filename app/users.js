@@ -101,17 +101,18 @@ exports.saveUser = function* (req, res) {
             type: 'Point',
             coordinates: [ parseFloat(longitude), parseFloat(latitude) ]
         };
-        const partners_nearby = yield partner_model.find({
-            geolocation: {
-                $nearSphere: {
-                    $geometry: geolocation,
-                    $maxDistance: PARTNER_NEAR_BY_DISTANCE
-                }
-            }
-        });
-        if (partners_nearby.length) {
-            location = partners_nearby[0].location;
-        }
+        // TODO remove, since we receive location id from google places api
+        // const partners_nearby = yield partner_model.find({
+        //     geolocation: {
+        //         $nearSphere: {
+        //             $geometry: geolocation,
+        //             $maxDistance: PARTNER_NEAR_BY_DISTANCE
+        //         }
+        //     }
+        // });
+        // if (partners_nearby.length && !location) {
+        //     location = partners_nearby[0].location;
+        // }
     } else {
         geolocation = null;
     }
