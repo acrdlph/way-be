@@ -22,10 +22,6 @@ const S3_USER_PHOTO_URL = (user, filename) =>
  */
 exports.usersByUser = function* (req, res) {
     const given_user = yield util.getUserIfExists(req.params.user_id);
-    // we can not do $or here because mondb does not support $or for geo queries
-    const same_location_users = yield user_model.find({
-        location: given_user.location
-    });
     let geo_near_users = [];
     if (given_user.geolocation) {
         geo_near_users = yield geo_user_model.find()
@@ -35,9 +31,8 @@ exports.usersByUser = function* (req, res) {
             })
             .exec();
     }
-    let users = _.uniqBy(_.flatten([geo_near_users, same_location_users]), user1 => user1.id);
     const messages = yield message_model.find({ receiver_id: given_user.id });
-    users = users.map(user => {
+    const users = geo_near_users.map(user => {
         const filtered_messages = messages.filter(message => message.sender_id == user.id &&
                 message.receiver_id == given_user.id);
         const non_delivered_messages = filtered_messages.filter(message => message.delivered === false);
@@ -60,10 +55,6 @@ exports.usersByUser = function* (req, res) {
             interests: user.interests,
             location: user.location,
             photo: user.photo,
-            geolocation: {
-                longitude: _.get(user, 'geolocation.coordinates.0'),
-                latitude: _.get(user, 'geolocation.coordinates.1')
-            },
             time_left: getMinTimeLeft(user, given_user),
             count: filtered_messages.length,
             non_delivered_count: non_delivered_messages.length,
@@ -80,6 +71,17 @@ exports.usersByUser = function* (req, res) {
  */
 exports.getUserDetails = function* (req, res) {
     const user = yield util.getUserIfExists(req.params.user_id);
+    const partners_nearby = yield partner_model.find({
+        geolocation: {
+            $nearSphere: {
+                $geometry: user.geolocation,
+                $maxDistance: PARTNER_NEAR_BY_DISTANCE
+            }
+        }
+    });
+    if (partners_nearby.length) {
+        user.location = partners_nearby[0].location;
+    }
     res.json(mapUserOutput(user));
 }
 
@@ -101,18 +103,6 @@ exports.saveUser = function* (req, res) {
             type: 'Point',
             coordinates: [ parseFloat(longitude), parseFloat(latitude) ]
         };
-        // TODO remove, since we receive location id from google places api
-        // const partners_nearby = yield partner_model.find({
-        //     geolocation: {
-        //         $nearSphere: {
-        //             $geometry: geolocation,
-        //             $maxDistance: PARTNER_NEAR_BY_DISTANCE
-        //         }
-        //     }
-        // });
-        // if (partners_nearby.length && !location) {
-        //     location = partners_nearby[0].location;
-        // }
     } else {
         geolocation = null;
     }
