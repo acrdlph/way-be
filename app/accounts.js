@@ -3,6 +3,7 @@ const co = require('co');
 const geo_user_model = require('./models/geo_user');
 const util = require('./util');
 const logger = require('./logger');
+const validator = require('validator');;
 const passport = require('passport')
 , LocalStrategy = require('passport-local').Strategy;
 
@@ -65,8 +66,8 @@ exports.signUp = function* (req, res) {
     const email = req.body.email;
     const password = req.body.password;
 
-    if (!username || !email || !password) {
-        throw util.createError(400, "Username, Email and Password are required");
+    if (!username || !validator.isEmail(email) || !password) {
+        throw util.createError(400, "Username, Email(check format) and Password are required");
     }
     const existing_username = yield util.getUserForUsername(username);
     const existing_id_username = yield util.getUserForUsername(user_id);
