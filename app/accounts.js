@@ -1,6 +1,31 @@
 const geo_user_model = require('./models/geo_user');
 const util = require('./util');
 const logger = require('./logger');
+const passport = require('passport')
+, LocalStrategy = require('passport-local').Strategy;
+
+/**
+ * passport with our own db
+ */
+passport.use(new LocalStrategy((username, password, done) => {
+    co(function* () {
+
+    }).catch(err => {
+
+    });
+    // User.findOne({ username: username }, (err, user) => {
+    //     if (err) { 
+    //         return done(err); 
+    //     }
+    //     if (!user) {
+    //         return done(null, false, { message: 'Incorrect username.' });
+    //     }
+    //     if (!user.validPassword(password)) {
+    //         return done(null, false, { message: 'Incorrect password.' });
+    //     }
+    //     return done(null, user);
+    // });
+}));
 
 exports.checkUsername = function* (req, res) {
     const username = req.params.username;
@@ -13,7 +38,7 @@ exports.checkUsername = function* (req, res) {
 }
 
 exports.signUp = function* (req, res) {
-    const user_id = req.body.user_id;
+    const user_id = req.body.user_id || "";
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
@@ -53,6 +78,7 @@ exports.signUp = function* (req, res) {
 }
 
 exports.login = function* (req, res) {
+
 }
 
 exports.logout = function* (req, res) {
