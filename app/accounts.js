@@ -9,9 +9,22 @@ const passport = require('passport')
 /**
  * passport with our own db
  */
-passport.use(new LocalStrategy((username, password, done) => {
+passport.use(new LocalStrategy({
+    usernameField: 'loginname',
+    passwordField: 'password',
+    session: false
+  }, (loginname, password, done) => {
     co(function* () {
-        const users = yield geo_user_model.find({ username: username});
+        const users = yield geo_user_model.find({
+            $or: [
+                {
+                    username: loginname
+                },
+                {
+                    email: loginname
+                }
+            ]
+        });
         if (users.length == 1) {
             const user = users[0];
             const verified = yield util.verifyPassword(password, user.password);
