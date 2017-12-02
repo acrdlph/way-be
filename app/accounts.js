@@ -22,7 +22,8 @@ exports.signUp = function* (req, res) {
         throw util.createError(400, "Username, Email and Password are required");
     }
     const existing_username = yield util.getUserForUsername(username);
-    if (existing_username) {
+    const existing_id_username = yield util.getUserForUsername(user_id);
+    if (existing_username || existing_id_username) {
         throw util.createError(400, "Username already exists");
     }
     const password_hash = yield util.getPasswordHash(password);

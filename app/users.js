@@ -70,7 +70,10 @@ exports.usersByUser = function* (req, res) {
  * @param {*} res 
  */
 exports.getUserDetails = function* (req, res) {
-    const user = yield util.getUserIfExists(req.params.user_id);
+    let user = yield util.getUserForUsername(req.params.user_id);
+    if (!user) { 
+        user = yield util.getUserIfExists(req.params.user_id);
+    }
     const partners_nearby = yield partner_model.find({
         geolocation: {
             $nearSphere: {
