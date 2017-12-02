@@ -7,6 +7,7 @@ const body_parser = require('body-parser');
 const config = require('./config');
 const logger = require('./logger');
 const user_controller = require('./users');
+const accounts_controller = require('./accounts');
 const partner_controller = require('./partners');
 const message_controller = require('./messages');
 const uploader = require('./upload');
@@ -94,6 +95,26 @@ app.get('/messages', (req, res) =>
 app.ws('/messages/:user_id', (ws, req) =>
     co(message_controller.initWsConnection(ws, req))
     .catch(err => {console.info(err);})
+);
+
+app.get('/accounts/checkname/:username', (req, res) =>
+    co(accounts_controller.checkUsername(req, res))
+    .catch(err => handleError(req, res, err))
+);
+
+app.post('/accounts', (req, res) =>
+    co(accounts_controller.signUp(req, res))
+    .catch(err => handleError(req, res, err))
+);
+
+app.post('/accounts/login', (req, res) =>
+    co(accounts_controller.login(req, res))
+    .catch(err => handleError(req, res, err))
+);
+
+app.post('/accounts/logout', (req, res) =>
+    co(accounts_controller.logout(req, res))
+    .catch(err => handleError(req, res, err))
 );
 
 app.listen(3001, () => logger.info('Waitlist API listening on port 3001!'));

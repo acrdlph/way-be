@@ -82,7 +82,7 @@ exports.getUserDetails = function* (req, res) {
     if (partners_nearby.length) {
         user.location = partners_nearby[0].location;
     }
-    res.json(mapUserOutput(user));
+    res.json(util.mapUserOutput(user));
 }
 
 /**
@@ -116,7 +116,7 @@ exports.saveUser = function* (req, res) {
             created_at: new Date()
         });
     yield new_user.save();
-    res.json(mapUserOutput(new_user));
+    res.json(util.mapUserOutput(new_user));
 };
 
 /**
@@ -138,32 +138,15 @@ exports.updateUser = function* (req, res) {
     user.name = req.body.name || user.name;
     user.interests = req.body.interests || user.interests;
     yield user.save();
-    res.json(mapUserOutput(user));
+    res.json(util.mapUserOutput(user));
 };
 
 exports.updatePhoto = function* (req, res) {
     const user = yield util.getUserIfExists(req.params.user_id);
     user.photo = S3_USER_PHOTO_URL(user, req.file.standard_name);
     yield user.save();
-    res.json(mapUserOutput(user));
+    res.json(util.mapUserOutput(user));
 };
-
-function mapUserOutput(user) {
-    return {
-        id: user.id,
-        name: user.name,
-        default_name: user.default_name,
-        interests: user.interests,
-        waiting_time: user.waiting_time,
-        location: user.location,
-        photo: user.photo,
-        geolocation: {
-            longitude: _.get(user, 'geolocation.coordinates.0'),
-            latitude: _.get(user, 'geolocation.coordinates.1')
-        },
-        created_at: user.created_at
-    }
-}
 
 function getMinTimeLeft(user1, user2) {
     return Math.min(getTimeLeft(user1), getTimeLeft(user2));

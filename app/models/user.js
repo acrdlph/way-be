@@ -4,11 +4,14 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
   name: String,
+  username: String,
+  email: String,
   default_name: String, 
   waiting_time: Number, // minutes
   interests: String,
   location: String,
   photo: String,
+  signed_up: Date,
   created_at: Date
 });
 
