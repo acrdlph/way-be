@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const co = require('co');
 const moment = require('moment');
 const body_parser = require('body-parser');
+const passport = require('passport');
 
 const config = require('./config');
 const logger = require('./logger');
@@ -44,6 +45,7 @@ app.use(function (req, res, next) {
 });
 app.use(body_parser.json()); // support json encoded bodies
 app.use(body_parser.urlencoded({ extended: true })); // support encoded bodies
+app.use(passport.initialize());
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
@@ -107,10 +109,10 @@ app.post('/accounts', (req, res) =>
     .catch(err => handleError(req, res, err))
 );
 
-app.post('/accounts/login', (req, res) =>
+app.post('/accounts/login', passport.authenticate('local'), (req, res) => {
     co(accounts_controller.login(req, res))
     .catch(err => handleError(req, res, err))
-);
+});
 
 app.post('/accounts/logout', (req, res) =>
     co(accounts_controller.logout(req, res))

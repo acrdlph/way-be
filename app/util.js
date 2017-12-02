@@ -43,6 +43,14 @@ exports.getUserForUsername = function* getUserForUsername(username) {
     return users[0];
 }
 
+exports.getUserForEmail = function* getUserForEmail(email) {
+    const users = yield user_model.find({email: email});
+    if (!users.length) {
+        return false;
+    }
+    return users[0];
+}
+
 exports.mapUserOutput = function mapUserOutput(user) {
     return {
         id: user.id,
@@ -77,7 +85,7 @@ exports.getPasswordHash = function* getPasswordHash(password) {
 }
 
 exports.verifyPassword = function* verifyPassword(password, hash) {
-    return yield new Promise((resolve, reject) => {
+    const correct_pass = yield new Promise((resolve, reject) => {
         bcrypt.compare(password, hash, function(err, res) {
             if (err) {
                 reject(err);
@@ -86,4 +94,5 @@ exports.verifyPassword = function* verifyPassword(password, hash) {
             }
         });
     });
+    return correct_pass;
 }

@@ -1,3 +1,5 @@
+const co = require('co');
+
 const geo_user_model = require('./models/geo_user');
 const util = require('./util');
 const logger = require('./logger');
@@ -9,23 +11,30 @@ const passport = require('passport')
  */
 passport.use(new LocalStrategy((username, password, done) => {
     co(function* () {
-
+        const users = yield geo_user_model.find({ username: username});
+        if (users.length == 1) {
+            const user = users[0];
+            const verified = yield util.verifyPassword(password, user.password);
+            if (verified) {
+                done(null, user);
+            } else {
+                done(null, false, { message: 'Incorrect username or password.' });
+            }
+        } else {
+            done(null, false, { message: 'Incorrect username or password.' });
+        }
     }).catch(err => {
-
+        done(err); 
     });
-    // User.findOne({ username: username }, (err, user) => {
-    //     if (err) { 
-    //         return done(err); 
-    //     }
-    //     if (!user) {
-    //         return done(null, false, { message: 'Incorrect username.' });
-    //     }
-    //     if (!user.validPassword(password)) {
-    //         return done(null, false, { message: 'Incorrect password.' });
-    //     }
-    //     return done(null, user);
-    // });
 }));
+
+passport.serializeUser(function(user, done) {
+    done(null, user.id);
+});
+  
+passport.deserializeUser(function(user, done) {
+    done(null, user);
+});
 
 exports.checkUsername = function* (req, res) {
     const username = req.params.username;
@@ -48,8 +57,9 @@ exports.signUp = function* (req, res) {
     }
     const existing_username = yield util.getUserForUsername(username);
     const existing_id_username = yield util.getUserForUsername(user_id);
-    if (existing_username || existing_id_username) {
-        throw util.createError(400, "Username already exists");
+    const existing_email = yield util.getUserForEmail(email);
+    if (existing_username || existing_id_username || existing_email) {
+        throw util.createError(400, "Username or email already exists");
     }
     const password_hash = yield util.getPasswordHash(password);
     let user = false;
@@ -78,7 +88,11 @@ exports.signUp = function* (req, res) {
 }
 
 exports.login = function* (req, res) {
-
+    if (req.user) {
+        res.json({token: req.user.id});
+    } else {
+        throw new Error("Something is wrong");
+    }
 }
 
 exports.logout = function* (req, res) {
