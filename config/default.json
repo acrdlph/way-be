@@ -12,5 +12,8 @@
             "acl": "public-read",
             "region": "eu-central-1"
         }
-    }
+    },
+    "server": {
+        "domain_name": "app.waitlist.cc"
+    } 
 }

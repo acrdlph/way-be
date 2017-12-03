@@ -5,6 +5,7 @@ const _ = require('lodash');
 const user_model = require('./models/user');
 const geo_user_model = require('./models/geo_user');
 const message_model = require('./models/message');
+const interaction_model = require('./models/interaction');
 const partner_model = require('./models/partner');
 const util = require('./util');
 const config = require('./config');
@@ -84,6 +85,19 @@ exports.getUserDetails = function* (req, res) {
     });
     if (partners_nearby.length) {
         user.location = partners_nearby[0].location;
+    }
+    if (req.query.generate_url) {
+        const interaction_date = new Date();
+        const interaction = new interaction_model({
+            initiator: user.username, // username
+            initiator_id: user.id, 
+            confirmation_code: interaction_date.getTime(), // timestamp
+            geolocation: user.geolocation,
+            created_at: interaction_date
+        });
+        interaction.save();
+        user.interation_url = config.get('server.domain_name') + '/' + interaction.initiator + '/' + 
+            interaction.confirmation_code
     }
     res.json(util.mapUserOutput(user));
 }

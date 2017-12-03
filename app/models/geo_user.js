@@ -14,6 +14,7 @@ const geoUserSchema = new Schema({
   interests: String,
   location: String,
   photo: String,
+  points: Number,
   geolocation: Schema.Types.Point,
   signed_up: Date,
   created_at: Date

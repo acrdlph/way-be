@@ -12,6 +12,7 @@ const userSchema = new Schema({
   interests: String,
   location: String,
   photo: String,
+  points: Number,
   signed_up: Date,
   created_at: Date
 });

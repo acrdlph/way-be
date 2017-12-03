@@ -9,6 +9,7 @@ const config = require('./config');
 const logger = require('./logger');
 const user_controller = require('./users');
 const accounts_controller = require('./accounts');
+const interactions_controller = require('./interactions');
 const partner_controller = require('./partners');
 const message_controller = require('./messages');
 const uploader = require('./upload');
@@ -116,6 +117,13 @@ app.post('/accounts/login', passport.authenticate('local'), (req, res) => {
 
 app.post('/accounts/logout', (req, res) =>
     co(accounts_controller.logout(req, res))
+    .catch(err => handleError(req, res, err))
+);
+
+// this is initiated by the FE after the new user creates a profile through a link or 
+// existing user scans a QR code through the app
+app.post('/interactions/:username/:confirmation_code', (req, res) =>
+    co(interactions_controller.verifyInteraction(req, res))
     .catch(err => handleError(req, res, err))
 );
 

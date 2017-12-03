@@ -66,6 +66,7 @@ exports.mapUserOutput = function mapUserOutput(user) {
             latitude: _.get(user, 'geolocation.coordinates.1')
         },
         signed_up: user.signed_up,
+        interation_url: user.interation_url,
         created_at: user.created_at
     }
 }

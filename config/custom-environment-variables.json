@@ -4,5 +4,8 @@
             "name": "S3_USERS_DIRECTORY",
             "region": "S3_USERS_REGION"
         }
-    }
+    },
+    "server": {
+        "domain_name": "SERVER_DOMAIN_NAME"
+    } 
 }
