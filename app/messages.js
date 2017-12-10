@@ -54,36 +54,16 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
  * @param {*} req 
  */
 exports.initWsConnection = function* (ws, req) {
-    console.log("ws connection initiated by user ", req.user_id);
+    logger.info("ws connection initiated by user ", req.user_id);
     ws.user_id = req.user_id;
     ws_connections[req.user_id] = ws;
-    const undelivered_messages = yield message_model.find(
-        {
-            receiver_id: req.user_id,
-            delivered: false
-        }
-    )
-    if (undelivered_messages.length) {
-        undelivered_messages.forEach(msg => co(function* () {
-            ws_connections[req.user_id].send(JSON.stringify({
-                sender_id: msg.sender_id,
-                receiver_id: msg.receiver_id,
-                message: msg.message,
-                created_at: msg.created_at
-            }));
-            msg.delivered = true;
-            yield msg.save();
-        }).catch(err => {
-            console.info(err);
-        }));
-    }
 
     ws.on('message', msg => co(function* () {
         msg = JSON.parse(msg);
         //let sender = yield UserModel.findOne({_id: msg.sender_id});
         //let receiver = yield UserModel.findOne({_id: msg.receiver_id});
         msg.created_at = new Date();
-        console.log("Message received ", msg);
+        logger.info("Message received ", msg);
         if (msg.receiver_id in ws_connections) {
             ws_connections[msg.receiver_id].send(JSON.stringify({
                 sender_id: msg.sender_id,
@@ -106,7 +86,7 @@ exports.initWsConnection = function* (ws, req) {
         const new_message = new message_model(msg);
         yield new_message.save();
     }).catch(err => {
-        console.info(err);
+        logger.error(err);
     }));
 
     // connection close - in the case of a cluster we need to have a background job running to 
@@ -115,4 +95,27 @@ exports.initWsConnection = function* (ws, req) {
         // console.log(connection);
         delete ws_connections[connection.user_id];
     });
+
+    setTimeout(() => co(function* () {
+        const undelivered_messages = yield message_model.find(
+            {
+                receiver_id: req.user_id,
+                delivered: false
+            }
+        )
+        if (undelivered_messages.length) {
+            undelivered_messages.forEach(msg => co(function* () {
+                ws_connections[req.user_id].send(JSON.stringify({
+                    sender_id: msg.sender_id,
+                    receiver_id: msg.receiver_id,
+                    message: msg.message,
+                    created_at: msg.created_at
+                }));
+                msg.delivered = true;
+                yield msg.save();
+            }).catch(err => {
+                logger.error(err);
+            }));
+        }
+    }), 30);
 }

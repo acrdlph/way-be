@@ -41,7 +41,7 @@ app.param('user_id', function (req, res, next, user_id) {
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    logger.logRequest(req);
+    // logger.logRequest(req);
     next();
 });
 app.use(body_parser.json()); // support json encoded bodies
