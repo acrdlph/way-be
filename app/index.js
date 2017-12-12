@@ -15,7 +15,8 @@ const message_controller = require('./messages');
 const uploader = require('./upload');
 
 // Set up default mongoose connection
-const mongo_db = `mongodb://${config.get('database.user')}:${config.get('database.password')}@${config.get('database.host')}:${config.get('database.port')}/${config.get('database.name')}`;
+const mongo_user_string = config.get('database.user') ? `${config.get('database.user')}:${config.get('database.password')}@` : '';
+const mongo_db = `mongodb://${mongo_user_string}${config.get('database.host')}:${config.get('database.port')}/${config.get('database.name')}`;
 mongoose.Promise = global.Promise;
 mongoose.connect(mongo_db, {
     useMongoClient: true

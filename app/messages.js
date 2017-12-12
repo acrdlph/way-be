@@ -35,13 +35,7 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
         // ideally the ui should make a call when the user actually sees the message to mark it as delivered
         message.delivered = true;
         yield message.save();
-        return {
-            id: message._id,
-            sender_id: message.sender_id,
-            receiver_id: message.receiver_id,
-            message: message.message,
-            created_at: message.created_at
-        }
+        return mapMessage(message);
     }).catch(err => {
         throw new util.createError(500, err.getMessage());
     }));
@@ -63,27 +57,20 @@ exports.initWsConnection = function* (ws, req) {
         //let sender = yield UserModel.findOne({_id: msg.sender_id});
         //let receiver = yield UserModel.findOne({_id: msg.receiver_id});
         msg.created_at = new Date();
-        logger.info("Message received ", msg);
-        if (msg.receiver_id in ws_connections) {
-            ws_connections[msg.receiver_id].send(JSON.stringify({
-                sender_id: msg.sender_id,
-                receiver_id: msg.receiver_id,
-                created_at: msg.created_at,
-                message: msg.message
-            }));
-            msg.delivered = true;
-        } else {
-            msg.delivered = false;
-        }
-        if (msg.sender_id in ws_connections) {
-            ws_connections[msg.sender_id].send(JSON.stringify({
-                sender_id: msg.sender_id,
-                receiver_id: msg.receiver_id,
-                created_at: msg.created_at,
-                message: msg.message
-            }));
-        }
         const new_message = new message_model(msg);
+        // save to generate db ID
+        yield new_message.save();
+        logger.info("Message received ", new_message);
+        if (new_message.receiver_id in ws_connections) {
+            new_message.delivered = true;
+            ws_connections[new_message.receiver_id].send(JSON.stringify(mapMessage(new_message)));
+        } else {
+            new_message.delivered = false;
+        }
+        if (new_message.sender_id in ws_connections) {
+            ws_connections[new_message.sender_id].send(JSON.stringify(mapMessage(new_message)));
+        }
+        // save to store delivered status
         yield new_message.save();
     }).catch(err => {
         logger.error(err);
@@ -105,17 +92,24 @@ exports.initWsConnection = function* (ws, req) {
         )
         if (undelivered_messages.length) {
             undelivered_messages.forEach(msg => co(function* () {
-                ws_connections[req.user_id].send(JSON.stringify({
-                    sender_id: msg.sender_id,
-                    receiver_id: msg.receiver_id,
-                    message: msg.message,
-                    created_at: msg.created_at
-                }));
                 msg.delivered = true;
+                ws_connections[req.user_id].send(JSON.stringify(mapMessage(msg)));
                 yield msg.save();
             }).catch(err => {
                 logger.error(err);
             }));
         }
     }), 30);
+}
+
+function mapMessage(msg) {
+    return {
+        id: msg.id,
+        local_id: msg.local_id,
+        sender_id: msg.sender_id,
+        receiver_id: msg.receiver_id,
+        message: msg.message,
+        delivered: msg.delivered,
+        created_at: msg.created_at
+    }
 }

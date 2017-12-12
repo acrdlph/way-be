@@ -1,4 +1,11 @@
 {
+    "database": {
+        "host": "MONGODB_HOST",
+        "port": "MONGODB_PORT",
+        "user": "MONGODB_USER",
+        "password": "MONGODB_PASSWORD",
+        "name": "MONGODB_NAME"
+    },
     "s3": {
         "users_bucket": {
             "name": "S3_USERS_DIRECTORY",
