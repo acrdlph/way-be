@@ -12,6 +12,7 @@ const accounts_controller = require('./accounts');
 const interactions_controller = require('./interactions');
 const partner_controller = require('./partners');
 const message_controller = require('./messages');
+const feedback_controller = require('./feedback');
 const uploader = require('./upload');
 
 // Set up default mongoose connection
@@ -51,7 +52,7 @@ app.use(passport.initialize());
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.get('/users/:user_id/details', (req, res) => 
+app.get('/users/:user_id/details', (req, res) =>
     co(user_controller.getUserDetails(req, res))
     .catch(err => handleError(req, res, err))
 );
@@ -121,7 +122,12 @@ app.post('/accounts/logout', (req, res) =>
     .catch(err => handleError(req, res, err))
 );
 
-// this is initiated by the FE after the new user creates a profile through a link or 
+app.post('/feedback', (req, res) =>
+    co(feedback_controller.save(req, res))
+    .catch(err => handleError(req, res, err))
+);
+
+// this is initiated by the FE after the new user creates a profile through a link or
 // existing user scans a QR code through the app
 app.post('/interactions/:username/:confirmation_code', (req, res) =>
     co(interactions_controller.verifyInteraction(req, res))
