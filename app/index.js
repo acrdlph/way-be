@@ -125,7 +125,11 @@ app.post('/interactions/:username/:confirmation_code', (req, res) =>
 );
 
 const server = app.listen(3001, () => logger.info('Waitlist API listening on port 3001!'));
-const io = require('socket.io')(server)
+const socketio_options = {
+    pingTimeout: 3000,
+    pingInterval: 3000
+};
+const io = require('socket.io')(server, socketio_options)
     .of('/messaging')
     .on('connection', (socket) => 
         co(message_controller.initSocketConnection(socket))
