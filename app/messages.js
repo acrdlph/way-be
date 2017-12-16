@@ -8,6 +8,10 @@ const logger = require('./logger');
 
 const ws_connections = {};
 
+const SOCKET_EVENTS = {
+    NEW_MESSAGE: 'NEW_MESSAGE'
+};
+
 /**
  * Get messages between provided sender and receiver
  * @param {*} req 
@@ -43,63 +47,71 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
 }
 
 /**
- * initialize a web socket connection
- * @param {*} ws 
- * @param {*} req 
+ * socket.io connection initialization
+ * @param {*} socket 
  */
-exports.initWsConnection = function* (ws, req) {
-    logger.info("ws connection initiated by user ", req.user_id);
-    ws.user_id = req.user_id;
-    ws_connections[req.user_id] = ws;
+exports.initSocketConnection = function* (socket) {
+    const {user_id} = socket.handshake.query;
+    ws_connections[user_id] = socket;
+    socket.on(SOCKET_EVENTS.NEW_MESSAGE, (msg) =>  
+        co(handleNewMessage(msg))
+        .catch(err => logger.error(err))
+    );
 
-    ws.on('message', msg => co(function* () {
-        msg = JSON.parse(msg);
-        //let sender = yield UserModel.findOne({_id: msg.sender_id});
-        //let receiver = yield UserModel.findOne({_id: msg.receiver_id});
-        msg.created_at = new Date();
-        const new_message = new message_model(msg);
-        // save to generate db ID
-        yield new_message.save();
-        logger.info("Message received ", new_message);
-        if (new_message.receiver_id in ws_connections) {
-            new_message.delivered = true;
-            ws_connections[new_message.receiver_id].send(JSON.stringify(mapMessage(new_message)));
-        } else {
-            new_message.delivered = false;
-        }
-        if (new_message.sender_id in ws_connections) {
-            ws_connections[new_message.sender_id].send(JSON.stringify(mapMessage(new_message)));
-        }
-        // save to store delivered status
-        yield new_message.save();
-    }).catch(err => {
-        logger.error(err);
-    }));
-
-    // connection close - in the case of a cluster we need to have a background job running to 
-    // deliver undelivered messages from the database periodically
-    ws.on('close', function (connection) {
+    socket.on('disconnect', function (reason) {
         // console.log(connection);
-        delete ws_connections[connection.user_id];
+        logger.warn('user ' + user_id + ' disconnected because of ' + reason);
+        delete ws_connections[user_id];
     });
 
+    // send undelivered messages
     setTimeout(() => co(function* () {
         const undelivered_messages = yield message_model.find(
             {
-                receiver_id: req.user_id,
+                receiver_id: user_id,
                 delivered: false
             }
         )
+        logger.info('undelivered_messages for ' + user_id, undelivered_messages);
         if (undelivered_messages.length) {
             undelivered_messages.forEach(msg => co(function* () {
+                logger.info('sending unsent messages');
                 msg.delivered = true;
-                ws_connections[req.user_id].send(JSON.stringify(mapMessage(msg)));
+                ws_connections[user_id].emit(SOCKET_EVENTS.NEW_MESSAGE, mapMessage(msg));
                 yield msg.save();
             }).catch(err => {
                 logger.error(err);
             }));
         }
     }), 30);
+}
+
+function* handleNewMessage(msg) {
+    msg.created_at = new Date();
+    const new_message = new message_model(msg);
+    // save to generate db ID
+    yield new_message.save();
+    logger.debug("Message received ", new_message);
+
+    // send to the destination
+    if (new_message.receiver_id in ws_connections) {
+        new_message.delivered = true;
+        ws_connections[new_message.receiver_id].emit(SOCKET_EVENTS.NEW_MESSAGE, 
+            mapMessage(new_message));
+    } else {
+        logger.warn('receiver not connected', new_message.receiver_id);
+        new_message.delivered = false;
+    }
+
+    // sending back to sender to confirm 
+    if (new_message.sender_id in ws_connections) {
+        ws_connections[new_message.sender_id].emit(SOCKET_EVENTS.NEW_MESSAGE, 
+            mapMessage(new_message));
+    } else {
+        logger.error('sender went offline ', new_message.sender_id);
+    }
+    // save to store delivered status
+    yield new_message.save();
 }
 
 function mapMessage(msg) {

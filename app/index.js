@@ -33,7 +33,6 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 const app = express();
-const express_ws = require('express-ws')(app);
 
 // this is required for websocket url params by expressWs
 app.param('user_id', function (req, res, next, user_id) {
@@ -41,7 +40,11 @@ app.param('user_id', function (req, res, next, user_id) {
     return next();
 });
 app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
+    // specifying Access-Control-Allow-Origin=* this way since
+    // socket.io sends credentials=init
+    res.header("Access-Control-Allow-Origin", req.header('origin') 
+    || req.header('x-forwarded-host') || req.header('referer') || req.header('host'));
+    res.header("Access-Control-Allow-Credentials", true);
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     // logger.logRequest(req);
     next();
@@ -97,11 +100,6 @@ app.get('/messages', (req, res) =>
     .catch(err => handleError(req, res, err))
 );
 
-app.ws('/messages/:user_id', (ws, req) =>
-    co(message_controller.initWsConnection(ws, req))
-    .catch(err => {console.info(err);})
-);
-
 app.get('/accounts/checkname/:username', (req, res) =>
     co(accounts_controller.checkUsername(req, res))
     .catch(err => handleError(req, res, err))
@@ -134,7 +132,13 @@ app.post('/interactions/:username/:confirmation_code', (req, res) =>
     .catch(err => handleError(req, res, err))
 );
 
-app.listen(3001, () => logger.info('Waitlist API listening on port 3001!'));
+const server = app.listen(3001, () => logger.info('Waitlist API listening on port 3001!'));
+const io = require('socket.io')(server)
+    .of('/messaging')
+    .on('connection', (socket) => 
+        co(message_controller.initSocketConnection(socket))
+        .catch(err => logger.error(err))
+    );
 
 function handleError(req, res, err) {
     logger.error(err);
