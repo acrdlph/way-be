@@ -23,9 +23,6 @@ mongoose.connect(mongo_db, {
     useMongoClient: true
 });
 
-// web socket connections
-const ws_connections = {};
-
 //Get the default connection
 const db = mongoose.connection;
 
@@ -34,11 +31,6 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 const app = express();
 
-// this is required for websocket url params by expressWs
-app.param('user_id', function (req, res, next, user_id) {
-    req.user_id = user_id || 'user_id';
-    return next();
-});
 app.use(function (req, res, next) {
     // specifying Access-Control-Allow-Origin=* this way since
     // socket.io sends credentials=init
