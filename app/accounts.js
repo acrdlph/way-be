@@ -38,7 +38,7 @@ passport.use(new LocalStrategy({
             done(null, false, { message: 'Incorrect username or password.' });
         }
     }).catch(err => {
-        done(err); 
+        done(err);
     });
 }));
 
@@ -46,7 +46,7 @@ passport.use(new LocalStrategy({
 passport.serializeUser(function(user, done) {
     done(null, user.id);
 });
-  
+
 passport.deserializeUser(function(user, done) {
     done(null, user);
 });
@@ -99,17 +99,26 @@ exports.signUp = function* (req, res) {
         );
     }
     yield user.save();
-    res.json(util.mapUserOutput(user));
+
+    // After registration, the user should be logged in.
+    // So the response has to contain the token as well.
+    const responseBody = util.mapUserOutput(user);
+    responseBody.token = createToken(user.id);
+    res.json(responseBody);
 }
 
 exports.login = function* (req, res) {
     if (req.user) {
-        res.json({token: req.user.id});
+        res.json({token: createToken(req.user.id)});
     } else {
         throw new Error("Something is wrong");
     }
 }
 
 exports.logout = function* (req, res) {
-    
+
+}
+
+function createToken(userId) {
+  return userId; // TODO: create the real token here!
 }
