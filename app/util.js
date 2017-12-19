@@ -9,7 +9,6 @@ const config = require('./config');
 const user_model = require('./models/geo_user');
 const message_model = require('./models/message');
 
-const PASSWORD_SALT_ROUNDS = 10;
 const TWENTY_FOUR_HOURS = 86400;
 
 /**

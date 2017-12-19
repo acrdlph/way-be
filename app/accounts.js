@@ -8,6 +8,8 @@ const geo_user_model = require('./models/geo_user');
 const util = require('./util');
 const logger = require('./logger');
 
+const PASSWORD_SALT_ROUNDS = 10;
+
 /**
  * passport with our own db
  */
