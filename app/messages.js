@@ -59,7 +59,6 @@ exports.initSocketConnection = function* (socket) {
     );
 
     socket.on('disconnect', function (reason) {
-        // console.log(connection);
         logger.warn('user ' + user_id + ' disconnected because of ' + reason);
         delete ws_connections[user_id];
     });

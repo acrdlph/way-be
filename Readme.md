@@ -4,7 +4,7 @@
 - Clone this repo.
 - Run `npm install`
 - Install auto reload server `npm install -g nodemon`
-- To start server run `npm start local`
+- To start server run `npm run local`
 
 ### Running locally with docker
 

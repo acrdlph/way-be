@@ -133,7 +133,8 @@ exports.saveUser = function* (req, res) {
             created_at: new Date()
         });
     yield new_user.save();
-    res.json(util.mapUserOutput(new_user));
+    const token = util.jwtSign(new_user.id);
+    res.json(util.mapUserOutput(new_user, token));
 };
 
 /**

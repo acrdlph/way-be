@@ -7,6 +7,7 @@ const passport = require('passport');
 
 const config = require('./config');
 const logger = require('./logger');
+const util = require('./util');
 const user_controller = require('./users');
 const accounts_controller = require('./accounts');
 const interactions_controller = require('./interactions');
@@ -31,7 +32,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 const app = express();
 
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
     // specifying Access-Control-Allow-Origin=* this way since
     // socket.io sends credentials=init
     res.header("Access-Control-Allow-Origin", req.header('origin') 
@@ -47,81 +48,69 @@ app.use(passport.initialize());
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.get('/users/:user_id/details', (req, res) =>
-    co(user_controller.getUserDetails(req, res))
-    .catch(err => handleError(req, res, err))
+app.get('/users/:user_id/details', accounts_controller.verifyAuthenticationMiddleWare, (req, res) => 
+    util.mainControlller(user_controller.getUserDetails, req, res)
 );
 
-app.get('/users/:user_id', (req, res) =>
-    co(user_controller.usersByUser(req, res))
-    .catch(err => handleError(req, res, err))
+app.get('/users/:user_id', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
+    util.mainControlller(user_controller.usersByUser, req, res)
 );
 
 app.post('/users', (req, res) =>
-    co(user_controller.saveUser(req, res))
-    .catch(err => handleError(req, res, err))
+    util.mainControlller(user_controller.saveUser, req, res)
 );
 
-app.put('/users/:id', (req, res) =>
-    co(user_controller.updateUser(req, res))
-    .catch(err => handleError(req, res, err))
+app.put('/users/:id', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
+    util.mainControlller(user_controller.updateUser, req, res)
 );
 
-app.post('/users/:user_id/photo', uploader.user_upload.single('photo'), (req, res) =>
-    co(user_controller.updatePhoto(req, res))
-    .catch(err => handleError(req, res, err))
+app.post('/users/:user_id/photo', 
+    accounts_controller.verifyAuthenticationMiddleWare, 
+    uploader.user_upload.single('photo'), 
+    (req, res) =>
+        util.mainControlller(user_controller.updatePhoto, req, res)
 );
 
 app.get('/partners', (req, res) =>
-    co(partner_controller.getAllPartners(req, res))
-    .catch(err => handleError(req, res, err))
+    util.mainControlller(partner_controller.getAllPartners, req, res)
 );
 
 app.get('/partners/search', (req, res) =>
-co(partner_controller.savePartnersForGeoQuery(req, res))
-.catch(err => handleError(req, res, err))
+    util.mainControlller(partner_controller.savePartnersForGeoQuery, req, res)
 );
 
 app.post('/partners', (req, res) =>
-    co(partner_controller.savePartner(req, res))
-    .catch(err => handleError(req, res, err))
+    util.mainControlller(partner_controller.savePartner, req, res)
 );
 
-app.get('/messages', (req, res) =>
-    co(message_controller.getMessagesBySenderAndReceiver(req, res))
-    .catch(err => handleError(req, res, err))
+app.get('/messages', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
+    util.mainControlller(message_controller.getMessagesBySenderAndReceiver, req, res)
 );
 
 app.get('/accounts/checkname/:username', (req, res) =>
-    co(accounts_controller.checkUsername(req, res))
-    .catch(err => handleError(req, res, err))
+    util.mainControlller(accounts_controller.checkUsername, req, res)
 );
 
 app.post('/accounts', (req, res) =>
-    co(accounts_controller.signUp(req, res))
-    .catch(err => handleError(req, res, err))
+    util.mainControlller(accounts_controller.signUp, req, res)
 );
 
-app.post('/accounts/login', passport.authenticate('local'), (req, res) => {
-    co(accounts_controller.login(req, res))
-    .catch(err => handleError(req, res, err))
-});
+app.post('/accounts/login', passport.authenticate('local'), (req, res) => 
+    util.mainControlller(accounts_controller.login, req, res)
+);
 
 app.post('/accounts/logout', (req, res) =>
-    co(accounts_controller.logout(req, res))
-    .catch(err => handleError(req, res, err))
+    util.mainControlller(accounts_controller.logout, req, res)
 );
 
 app.post('/feedback', (req, res) =>
-    co(feedback_controller.save(req, res))
-    .catch(err => handleError(req, res, err))
+    util.mainControlller(feedback_controller.save, req, res)
 );
 
 // this is initiated by the FE after the new user creates a profile through a link or
 // existing user scans a QR code through the app
 app.post('/interactions/:username/:confirmation_code', (req, res) =>
-    co(interactions_controller.verifyInteraction(req, res))
-    .catch(err => handleError(req, res, err))
+    util.mainControlller(interactions_controller.verifyInteraction, req, res)
 );
 
 const server = app.listen(3001, () => logger.info('Waitlist API listening on port 3001!'));
@@ -135,8 +124,3 @@ const io = require('socket.io')(server, socketio_options)
         co(message_controller.initSocketConnection(socket))
         .catch(err => logger.error(err))
     );
-
-function handleError(req, res, err) {
-    logger.error(err);
-    res.status(err.code || 500).json({message: err.message});
-}
