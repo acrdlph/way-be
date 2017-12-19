@@ -13,13 +13,13 @@ const config = require('./config');
 const USER_DEFAULT_NAME = 'Still Anonymous';
 const USER_NEAR_BY_DISTANCE = 5000; // 5km
 const PARTNER_NEAR_BY_DISTANCE = 50000; // 50km
-const S3_USER_PHOTO_URL = (user, filename) => 
+const S3_USER_PHOTO_URL = (user, filename) =>
 `https://s3.${config.get('s3.users_bucket.region')}.amazonaws.com/${config.get('s3.users_bucket.name')}/${user.id}/${filename}`
 
 /**
  * get users from the perspective of a given user
- * @param {*} req 
- * @param {*} res 
+ * @param {*} req
+ * @param {*} res
  */
 exports.usersByUser = function* (req, res) {
     const given_user = yield util.getUserIfExists(req.params.user_id);
@@ -67,36 +67,39 @@ exports.usersByUser = function* (req, res) {
 
 /**
  * get the given users details
- * @param {*} req 
- * @param {*} res 
+ * @param {*} req
+ * @param {*} res
  */
 exports.getUserDetails = function* (req, res) {
     let user = yield util.getUserForUsername(req.params.user_id);
-    if (!user) { 
+    if (!user) {
         user = yield util.getUserIfExists(req.params.user_id);
     }
-    const partners_nearby = yield partner_model.find({
-        geolocation: {
-            $nearSphere: {
-                $geometry: user.geolocation,
-                $maxDistance: PARTNER_NEAR_BY_DISTANCE
-            }
-        }
-    });
-    if (partners_nearby.length) {
-        user.location = partners_nearby[0].location;
+    if(user.geolocation) {
+      const partners_nearby = yield partner_model.find({
+          geolocation: {
+              $nearSphere: {
+                  $geometry: user.geolocation,
+                  $maxDistance: PARTNER_NEAR_BY_DISTANCE
+              }
+          }
+      });
+      if (partners_nearby.length) {
+          user.location = partners_nearby[0].location;
+      }
     }
+
     if (req.query.generate_url) {
         const interaction_date = new Date();
         const interaction = new interaction_model({
             initiator: user.username, // username
-            initiator_id: user.id, 
+            initiator_id: user.id,
             confirmation_code: interaction_date.getTime(), // timestamp
             geolocation: user.geolocation,
             created_at: interaction_date
         });
         interaction.save();
-        user.interation_url = config.get('server.domain_name') + '/' + interaction.initiator + '/' + 
+        user.interation_url = config.get('server.domain_name') + '/' + interaction.initiator + '/' +
             interaction.confirmation_code
     }
     res.json(util.mapUserOutput(user));
@@ -104,8 +107,8 @@ exports.getUserDetails = function* (req, res) {
 
 /**
  * save a new user
- * @param {*} req 
- * @param {*} res 
+ * @param {*} req
+ * @param {*} res
  */
 exports.saveUser = function* (req, res) {
     let location = req.body.location;
@@ -139,8 +142,8 @@ exports.saveUser = function* (req, res) {
 
 /**
  * update a given user
- * @param {*} req 
- * @param {*} res 
+ * @param {*} req
+ * @param {*} res
  */
 exports.updateUser = function* (req, res) {
     const user = yield util.getUserIfExists(req.params.id);
@@ -174,4 +177,3 @@ function getTimeLeft(user) {
     return moment(user.created_at).add(user.waiting_time, 'm')
         .diff(new Date(), 'minutes');
 }
-
