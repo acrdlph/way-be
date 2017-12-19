@@ -1,5 +1,9 @@
 ## Waitlist Backend
 
+### Prerequisites
+
+A working installation of nodejs version 8.
+
 ### Getting started
 - Clone this repo.
 - Run `npm install`
