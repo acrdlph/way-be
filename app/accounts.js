@@ -18,20 +18,20 @@ passport.use(new LocalStrategy({
     passwordField: 'password',
     session: false
   }, (loginname, password, done) => {
-        co(loginCallBack(loginname, password, done))
+        co(passportLoginCallBack(loginname, password, done))
         .catch(err => {
             done(err); 
         });
 }));
 
 // TODO redo these
-// passport.serializeUser(function(user, done) {
-//     done(null, user.id);
-// });
+passport.serializeUser(function(user, done) {
+    done(null, user.id);
+});
   
-// passport.deserializeUser(function(id, done) {
-//     done(null, user);
-// });
+passport.deserializeUser(function(id, done) {
+    done(null, id);
+});
 
 exports.checkUsername = function* (req, res) {
     const username = req.params.username;
@@ -88,9 +88,10 @@ exports.signUp = function* (req, res) {
 exports.login = function* (req, res) {
     if (req.user) {
         const token = util.jwtSign(req.user.id);
+        const user_output = util.mapUserOutput(req.user, token);
         res.json({ 
-            auth: true, 
-            token: token 
+            ...user_output,
+            auth: true
         });
     } else {
         throw new Error("Something is wrong");
@@ -104,7 +105,7 @@ exports.logout = function* (req, res) {
     });
 }
 
-function* loginCallBack(loginname, password, done) {
+function* passportLoginCallBack(loginname, password, done) {
     const users = yield geo_user_model.find({
         $or: [
             {
