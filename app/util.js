@@ -13,8 +13,8 @@ const TWENTY_FOUR_HOURS = 86400;
 
 /**
  * create an error object with a http error code
- * @param {*} code 
- * @param {*} message 
+ * @param {*} code
+ * @param {*} message
  */
 exports.createError = (code, message) => {
     const e = new Error();
@@ -25,9 +25,9 @@ exports.createError = (code, message) => {
 
 /**
  * Handle error with proper http response
- * @param {*} req 
- * @param {*} res 
- * @param {*} err 
+ * @param {*} req
+ * @param {*} res
+ * @param {*} err
  */
 exports.handleError = (req, res, err, details) => {
     logger.error(err);
@@ -39,18 +39,18 @@ exports.handleError = (req, res, err, details) => {
 
 /**
  * Main controller which calls other controllers and handles errors
- * @param {*} controllerFunc 
- * @param {*} req 
- * @param {*} res 
+ * @param {*} controllerFunc
+ * @param {*} req
+ * @param {*} res
  */
-exports.mainControlller = (controllerFunc, req, res) => 
+exports.mainControlller = (controllerFunc, req, res) =>
     co(controllerFunc(req, res))
     .catch(err => this.handleError(req, res, err))
 
 
 /**
  * Get user for the given id, throw error if does not exist
- * @param {*} id 
+ * @param {*} id
  */
 exports.getUserIfExists = function* getUserIfExists(id) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -90,7 +90,7 @@ exports.verifyJwt = function verifyJwt(token) {
         jwt.verify(token, config.get('server.private_key'), (err, decoded) => {
             if (err) {
                 logger.error(err);
-                reject(this.createError(500, "Failed to authenticate token"));
+                reject(this.createError(401, "Failed to authenticate token"));
             }
             resolve(decoded);
         });
