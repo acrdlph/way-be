@@ -167,6 +167,9 @@ function getMinTimeLeft(user1, user2) {
 }
 
 function getTimeLeft(user) {
-    return moment(user.waiting_started_at).add(user.waiting_time, 'm')
+    // for backward compatibility set waiting_started_at=created_at if waiting_started_at 
+    // is not available 
+    const waiting_started_at = user.waiting_started_at || user.created_at;
+    return moment(waiting_started_at).add(user.waiting_time, 'm')
         .diff(util.serverCurrentDate(), 'minutes');
 }
