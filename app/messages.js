@@ -59,7 +59,7 @@ exports.initSocketConnection = function* (socket) {
     );
 
     socket.on('disconnect', function (reason) {
-        // logger.warn('user ' + user_id + ' disconnected because of ' + reason);
+        logger.debug('user ' + user_id + ' disconnected because of ' + reason);
         delete ws_connections[user_id];
     });
 
@@ -71,10 +71,10 @@ exports.initSocketConnection = function* (socket) {
                 delivered: false
             }
         )
-        logger.info('undelivered_messages for ' + user_id, undelivered_messages);
+        logger.debug('undelivered_messages for ' + user_id, undelivered_messages);
         if (undelivered_messages.length) {
             undelivered_messages.forEach(msg => co(function* () {
-                logger.info('sending unsent messages');
+                logger.debug('sending unsent messages');
                 msg.delivered = true;
                 ws_connections[user_id].emit(SOCKET_EVENTS.NEW_MESSAGE, mapMessage(msg));
                 yield msg.save();
