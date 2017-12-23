@@ -1,21 +1,9 @@
-const geojson = require('mongoose-geojson-schema');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const standardUser = require('./standard_user');
 
-const userSchema = new Schema({
-  name: String,
-  username: String,
-  password: String,
-  email: String,
-  default_name: String, 
-  waiting_time: Number, // minutes
-  interests: String,
-  location: String,
-  photo: String,
-  points: Number,
-  signed_up: Date,
-  created_at: Date
-});
+// DO NOT use this for queries unless you strictly want to make a query without geolocation
+const userSchema = new Schema(standardUser);
 
 const User = mongoose.model('User', userSchema, 'users');
 

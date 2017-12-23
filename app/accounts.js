@@ -63,24 +63,17 @@ exports.signUp = function* (req, res) {
     if (user_id) {
         user = yield util.getUserIfExists(user_id);
     }
-    const signed_up = new Date();
+    
     if (user) {
+        const signed_up = util.serverCurrentDate();
         user.username = username;
         user.email = email;
         user.password = password_hash;
         user.sign_up = signed_up;
+        yield user.save();
     } else {
-        user = new geo_user_model(
-            {
-                username: username,
-                email: email,
-                password: password_hash,
-                signed_up: signed_up,
-                created_at: signed_up
-            }
-        );
+        user = yield util.createNewRegisteredUser(username, email, password_hash);
     }
-    yield user.save();
     const token = util.jwtSign(user.id);
     res.json(util.mapUserOutput(user, token));
 }

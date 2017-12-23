@@ -10,6 +10,11 @@ const user_model = require('./models/geo_user');
 const message_model = require('./models/message');
 
 const TWENTY_FOUR_HOURS = 86400;
+const USER_DEFAULT_NAME = 'Still Anonymous';
+
+/**
+ * Most functions here should be moved and recategorized as we develop more
+ */
 
 /**
  * create an error object with a http error code
@@ -105,6 +110,7 @@ exports.mapUserOutput = function mapUserOutput(user, token) {
         default_name: user.default_name,
         interests: user.interests,
         waiting_time: user.waiting_time,
+        waiting_started_at: user.waiting_started_at,
         location: user.location,
         photo: user.photo,
         geolocation: {
@@ -116,4 +122,40 @@ exports.mapUserOutput = function mapUserOutput(user, token) {
         created_at: user.created_at,
         token: token
     }
+}
+
+exports.serverCurrentDate = function() {
+    // TODO change to UTC and use moment
+    return new Date();
+}
+
+exports.createNewRegisteredUser = function* createNewRegisteredUser(username, email, password) {
+    const created_at = this.serverCurrentDate();
+    const new_user = new user_model(
+        {
+            username: username,
+            email: email,
+            password: password,
+            default_name: USER_DEFAULT_NAME,
+            signed_up: created_at,
+            created_at: created_at
+        });
+    yield new_user.save();
+    return new_user;
+}
+
+exports.createNewUser = function* createNewUser(name, waiting_time, location, geolocation) {
+    const created_at = this.serverCurrentDate();
+    const new_user = new user_model(
+        {
+            name: name,
+            default_name: USER_DEFAULT_NAME,
+            waiting_time: waiting_time,
+            location: location,
+            geolocation: geolocation,
+            waiting_started_at: created_at,
+            created_at: created_at
+        });
+    yield new_user.save();
+    return new_user;
 }

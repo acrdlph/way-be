@@ -11,7 +11,7 @@ exports.save = function* (req, res) {
     const new_feedback = new feedback_model({
         email,
         feedback,
-        created_at: new Date()
+        created_at: util.serverCurrentDate()
     });
 
     yield new_feedback.save();

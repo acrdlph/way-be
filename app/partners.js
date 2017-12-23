@@ -40,7 +40,7 @@ exports.savePartner = function* (req, res) {
                 type: 'Point',
                 coordinates: [ parseFloat(longitude), parseFloat(latitude) ]
             } : null,
-            created_at: new Date()
+            created_at: util.serverCurrentDate()
         });
     yield new_partner.save();
     res.json(new_partner);

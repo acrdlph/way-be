@@ -86,7 +86,7 @@ exports.initSocketConnection = function* (socket) {
 }
 
 function* handleNewMessage(msg) {
-    msg.created_at = new Date();
+    msg.created_at = util.serverCurrentDate();
     const new_message = new message_model(msg);
     // save to generate db ID
     yield new_message.save();

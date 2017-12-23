@@ -10,7 +10,6 @@ const partner_model = require('./models/partner');
 const util = require('./util');
 const config = require('./config');
 
-const USER_DEFAULT_NAME = 'Still Anonymous';
 const USER_NEAR_BY_DISTANCE = 5000; // 5km
 const PARTNER_NEAR_BY_DISTANCE = 50000; // 50km
 const S3_USER_PHOTO_URL = (user, filename) =>
@@ -90,7 +89,7 @@ exports.getUserDetails = function* (req, res) {
     }
 
     if (req.query.generate_url) {
-        const interaction_date = new Date();
+        const interaction_date = util.serverCurrentDate();
         const interaction = new interaction_model({
             initiator: user.username, // username
             initiator_id: user.id,
@@ -126,16 +125,7 @@ exports.saveUser = function* (req, res) {
     } else {
         geolocation = null;
     }
-    const new_user = new geo_user_model(
-        {
-            name: name,
-            default_name: USER_DEFAULT_NAME,
-            waiting_time: waiting_time,
-            location: location,
-            geolocation: geolocation,
-            created_at: new Date()
-        });
-    yield new_user.save();
+    const new_user = yield util.createNewUser(name, waiting_time, location, geolocation);
     const token = util.jwtSign(new_user.id);
     res.json(util.mapUserOutput(new_user, token));
 };
@@ -155,6 +145,9 @@ exports.updateUser = function* (req, res) {
             parseFloat(req.body.geolocation.latitude)
         ]
     } : user.geolocation;
+    if (req.query.waiting_started === 'true') {
+        user.waiting_started_at = util.serverCurrentDate();
+    }
     user.waiting_time = req.body.waiting_time || user.waiting_time;
     user.name = req.body.name || user.name;
     user.interests = req.body.interests || user.interests;
@@ -174,6 +167,6 @@ function getMinTimeLeft(user1, user2) {
 }
 
 function getTimeLeft(user) {
-    return moment(user.created_at).add(user.waiting_time, 'm')
-        .diff(new Date(), 'minutes');
+    return moment(user.waiting_started_at).add(user.waiting_time, 'm')
+        .diff(util.serverCurrentDate(), 'minutes');
 }

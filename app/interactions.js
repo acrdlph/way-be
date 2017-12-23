@@ -13,7 +13,7 @@ exports.verifyInteraction = function* verifyInteraction(req, res) {
         const initiator_id = interaction.initiator_id || '';
         if (interaction.confirmed_on) throw util.createError(400, "Already confirmed");
         const initiator = yield util.getUserIfExists(initiator_id);
-        interaction.confirmed_on = new Date();
+        interaction.confirmed_on = util.serverCurrentDate();
         interaction.receiver = req.body.receiver;
         interaction.receiver_id = req.body.receiver_id;
         yield interaction.save();
