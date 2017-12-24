@@ -48,6 +48,19 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
 
 /**
  * socket.io connection initialization
+ * 
+ * RANT: How to handle multi server chat
+ * There are few problems that needs to resolved if we are to avoid a single point of failure
+ * an support stateless, fully redundant clustering and failover. 
+ * - Clients need to continously reconnect if there is a failure. (DONE)
+ * - Time should be the same wherever the node is hosted. Solution: use UTC(IN PROGRESS)
+ * - Delivered status can not be updated immediately. Solution: confirm delivery from a socket.io event triggered by client.
+ * - How do we handle communication between two users who are connected to two different servers in the cluster?
+ *      Suggested solution: Then the node which receives a message tries to check if the receiving user is connected to it self, if it is it will deliver.
+ *                          if not it will just store the message(but resend to sender to confirm). Then each node will also have a background job running
+ *                          to periodically check if the users who are connected to it have some undelivered messages and try to deliver.
+ * - How do we handle users which have multiple devices connected? The above solution should track and send own messages as well.
+ * 
  * @param {*} socket 
  */
 exports.initSocketConnection = function* (socket) {
