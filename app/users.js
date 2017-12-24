@@ -98,7 +98,7 @@ exports.getUserDetails = function* (req, res) {
             created_at: interaction_date
         });
         interaction.save();
-        user.interation_url = config.get('server.domain_name') + '/' + interaction.initiator + '/' +
+        user.interaction_url = config.get('server.domain_name') + '/' + interaction.initiator + '/' +
             interaction.confirmation_code
     }
     res.json(util.mapUserOutput(user));

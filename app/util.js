@@ -118,7 +118,7 @@ exports.mapUserOutput = function mapUserOutput(user, token) {
             latitude: _.get(user, 'geolocation.coordinates.1')
         },
         signed_up: user.signed_up,
-        interaction_url: user.interation_url,
+        interaction_url: user.interaction_url,
         created_at: user.created_at,
         token: token
     }
