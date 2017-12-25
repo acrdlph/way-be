@@ -1,13 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const co = require('co');
-const moment = require('moment');
 const body_parser = require('body-parser');
 const passport = require('passport');
 
 const config = require('./config');
 const logger = require('./logger');
-const util = require('./util');
+const controller = require('./utils/controller');
 const user_controller = require('./users');
 const accounts_controller = require('./accounts');
 const interactions_controller = require('./interactions');
@@ -49,68 +48,68 @@ app.use(passport.initialize());
 app.get('/', (req, res) => res.send('Hello World!'));
 
 app.get('/users/:user_id/details', accounts_controller.verifyAuthenticationMiddleWare, (req, res) => 
-    util.mainControlller(user_controller.getUserDetails, req, res)
+    controller.mainControlller(user_controller.getUserDetails, req, res)
 );
 
 app.get('/users/:user_id', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
-    util.mainControlller(user_controller.usersByUser, req, res)
+    controller.mainControlller(user_controller.usersByUser, req, res)
 );
 
 app.post('/users', (req, res) =>
-    util.mainControlller(user_controller.saveUser, req, res)
+    controller.mainControlller(user_controller.saveUser, req, res)
 );
 
 app.put('/users/:id', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
-    util.mainControlller(user_controller.updateUser, req, res)
+    controller.mainControlller(user_controller.updateUser, req, res)
 );
 
 app.post('/users/:user_id/photo', 
     accounts_controller.verifyAuthenticationMiddleWare, 
     uploader.user_upload.single('photo'), 
     (req, res) =>
-        util.mainControlller(user_controller.updatePhoto, req, res)
+        controller.mainControlller(user_controller.updatePhoto, req, res)
 );
 
 app.get('/partners', (req, res) =>
-    util.mainControlller(partner_controller.getAllPartners, req, res)
+    controller.mainControlller(partner_controller.getAllPartners, req, res)
 );
 
 app.get('/partners/search', (req, res) =>
-    util.mainControlller(partner_controller.savePartnersForGeoQuery, req, res)
+    controller.mainControlller(partner_controller.savePartnersForGeoQuery, req, res)
 );
 
 app.post('/partners', (req, res) =>
-    util.mainControlller(partner_controller.savePartner, req, res)
+    controller.mainControlller(partner_controller.savePartner, req, res)
 );
 
 app.get('/messages', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
-    util.mainControlller(message_controller.getMessagesBySenderAndReceiver, req, res)
+    controller.mainControlller(message_controller.getMessagesBySenderAndReceiver, req, res)
 );
 
 app.get('/accounts/checkname/:username', (req, res) =>
-    util.mainControlller(accounts_controller.checkUsername, req, res)
+    controller.mainControlller(accounts_controller.checkUsername, req, res)
 );
 
 app.post('/accounts', (req, res) =>
-    util.mainControlller(accounts_controller.signUp, req, res)
+    controller.mainControlller(accounts_controller.signUp, req, res)
 );
 
 app.post('/accounts/login', passport.authenticate('local'), (req, res) => 
-    util.mainControlller(accounts_controller.login, req, res)
+    controller.mainControlller(accounts_controller.login, req, res)
 );
 
 app.post('/accounts/logout', (req, res) =>
-    util.mainControlller(accounts_controller.logout, req, res)
+    controller.mainControlller(accounts_controller.logout, req, res)
 );
 
 app.post('/feedback', (req, res) =>
-    util.mainControlller(feedback_controller.save, req, res)
+    controller.mainControlller(feedback_controller.save, req, res)
 );
 
 // this is initiated by the FE after the new user creates a profile through a link or
 // existing user scans a QR code through the app
 app.post('/interactions/:username/:confirmation_code', (req, res) =>
-    util.mainControlller(interactions_controller.verifyInteraction, req, res)
+    controller.mainControlller(interactions_controller.verifyInteraction, req, res)
 );
 
 const server = app.listen(3001, () => logger.info('Waitlist API listening on port 3001!'));

@@ -1,9 +1,12 @@
 const co = require('co');
 const moment = require('moment');
 
-const user_model = require('./models/user');
 const message_model = require('./models/message');
-const util = require('./util');
+const message_repository = require('./repository/message');
+const user_repository = require('./repository/user');
+const error_util = require('./utils/error');
+const datetime_util = require('./utils/datetime');
+const mapper_util = require('./utils/mapper');
 const logger = require('./logger');
 
 const ws_connections = {};
@@ -18,9 +21,9 @@ const SOCKET_EVENTS = {
  * @param {*} res 
  */
 exports.getMessagesBySenderAndReceiver = function* (req, res) {
-    //const sender = yield util.getUserIfExists(req.query.sender_id);
-    //const receiver = yield util.getUserIfExists(req.query.receiver_id);
-    let messages = yield message_model.find({
+    const sender = yield user_repository.getUserIfExists(req.query.sender_id);
+    const receiver = yield user_repository.getUserIfExists(req.query.receiver_id);
+    let messages = yield message_repository.find({
         $or:
             [
                 {
@@ -38,10 +41,10 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
         // this might not be a good solution because the client can ignore messages even though it downloads
         // ideally the ui should make a call when the user actually sees the message to mark it as delivered
         message.delivered = true;
-        yield message.save();
-        return mapMessage(message);
+        yield message_repository.save(message);
+        return mapper_util.mapMessageOutput(message);
     }).catch(err => {
-        throw new util.createError(500, err.getMessage());
+        throw new error_util.createError(500, err.getMessage());
     }));
     res.json(messages);
 }
@@ -78,7 +81,7 @@ exports.initSocketConnection = function* (socket) {
 
     // send undelivered messages
     setTimeout(() => co(function* () {
-        const undelivered_messages = yield message_model.find(
+        const undelivered_messages = yield message_repository.find(
             {
                 receiver_id: user_id,
                 delivered: false
@@ -89,7 +92,7 @@ exports.initSocketConnection = function* (socket) {
             undelivered_messages.forEach(msg => co(function* () {
                 logger.debug('sending unsent messages');
                 msg.delivered = true;
-                ws_connections[user_id].emit(SOCKET_EVENTS.NEW_MESSAGE, mapMessage(msg));
+                ws_connections[user_id].emit(SOCKET_EVENTS.NEW_MESSAGE, mapper_util.mapMessageOutput(msg));
                 yield msg.save();
             }).catch(err => {
                 logger.error(err);
@@ -99,17 +102,17 @@ exports.initSocketConnection = function* (socket) {
 }
 
 function* handleNewMessage(msg) {
-    msg.created_at = util.serverCurrentDate();
+    msg.created_at = datetime_util.serverCurrentDate();
     const new_message = new message_model(msg);
     // save to generate db ID
-    yield new_message.save();
+    yield message_repository.save(new_message);
     logger.debug("Message received ", new_message);
 
     // send to the destination
     if (new_message.receiver_id in ws_connections) {
         new_message.delivered = true;
         ws_connections[new_message.receiver_id].emit(SOCKET_EVENTS.NEW_MESSAGE, 
-            mapMessage(new_message));
+            mapper_util.mapMessageOutput(new_message));
     } else {
         logger.warn('receiver not connected', new_message.receiver_id);
         new_message.delivered = false;
@@ -118,22 +121,10 @@ function* handleNewMessage(msg) {
     // sending back to sender to confirm 
     if (new_message.sender_id in ws_connections) {
         ws_connections[new_message.sender_id].emit(SOCKET_EVENTS.NEW_MESSAGE, 
-            mapMessage(new_message));
+            mapper_util.mapMessageOutput(new_message));
     } else {
         logger.error('sender went offline ', new_message.sender_id);
     }
     // save to store delivered status
-    yield new_message.save();
-}
-
-function mapMessage(msg) {
-    return {
-        id: msg.id,
-        local_id: msg.local_id,
-        sender_id: msg.sender_id,
-        receiver_id: msg.receiver_id,
-        message: msg.message,
-        delivered: msg.delivered,
-        created_at: msg.created_at
-    }
+    message_repository.save(new_message);
 }

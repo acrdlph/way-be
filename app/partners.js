@@ -1,6 +1,9 @@
 const _ = require('lodash');
 const partner_model = require('./models/partner');
-const util = require('./util');
+
+const partner_repository = require('./repository/partner');
+const error_util = require('./utils/error');
+const datetime_util = require('./utils/datetime');
 
 /**
  * save a new partner
@@ -19,12 +22,12 @@ exports.savePartner = function* (req, res) {
     const geolocation = req.body.geolocation;
     const industry = req.body.industry;
     if ((!location && !geolocation) || !name || !unique_key) 
-        throw new util.createError(400, 'Please provide name, unique_key and one of the fields location or geolocation');
+        throw new error_util.createError(400, 'Please provide name, unique_key and one of the fields location or geolocation');
     const longitude = _.get(geolocation, 'longitude');
     const latitude = _.get(geolocation, 'latitude');
-    const existing_partner = yield partner_model.find({unique_key: unique_key});
+    const existing_partner = yield partner_repository.find({unique_key: unique_key});
     if (existing_partner.length) 
-        throw new util.createError(400, 'Partner with the given unique key already exists'); 
+        throw new error_util.createError(400, 'Partner with the given unique key already exists'); 
     const new_partner = new partner_model(
         {
             name: name,
@@ -40,9 +43,9 @@ exports.savePartner = function* (req, res) {
                 type: 'Point',
                 coordinates: [ parseFloat(longitude), parseFloat(latitude) ]
             } : null,
-            created_at: util.serverCurrentDate()
+            created_at: datetime_util.serverCurrentDate()
         });
-    yield new_partner.save();
+    yield partner_repository.save(new_partner);
     res.json(new_partner);
 };
 
@@ -55,6 +58,6 @@ exports.searchPartners = function* (req, res){
 }
 
 exports.getAllPartners = function* (req, res) {
-    const partners = yield partner_model.find({});
+    const partners = yield partner_repository.find({});
     res.json(partners);
 }

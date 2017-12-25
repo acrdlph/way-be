@@ -6,7 +6,8 @@ const mimetypes = require('mime-types');
 
 const config = require('./config');
 const logger = require('./logger');
-const util = require('./util');
+const user_repository = require('./repository/user');
+const datetime_util = require('./utils/datetime');
 
 const s3 = new aws.S3();
 
@@ -20,8 +21,8 @@ exports.user_upload = multer({
         },
         key: (req, file, cb) => {
             co(function* () {
-                const user = yield util.getUserIfExists(req.params.user_id);
-                file.standard_name = `profile-${util.serverCurrentDate().getTime()}.` + mimetypes.extension(file.mimetype);
+                const user = yield user_repository.getUserIfExists(req.params.user_id);
+                file.standard_name = `profile-${datetime_util.serverCurrentDate().getTime()}.` + mimetypes.extension(file.mimetype);
                 cb(null, user.id + '/' + file.standard_name);
             }).catch((e) => {
                 logger.error(e);
