@@ -3,6 +3,8 @@ const validator = require('validator');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
+const config = require('./config');
+const logger = require('./logger');
 const user_repository = require('./repository/user');
 const error_util = require('./utils/error');
 const auth_util = require('./utils/auth');
@@ -74,13 +76,13 @@ exports.signUp = function* (req, res) {
     } else {
         user = yield user_repository.createNewRegisteredUser(username, email, password_hash);
     }
-    const token = auth_util.jwtSign(user.id, constants.TWENTY_FOUR_HOURS);
+    const token = auth_util.jwtSign(user.id, config.get('server.private_key'), constants.TWENTY_FOUR_HOURS);
     res.json(mapper_util.mapUserOutput(user, token));
 }
 
 exports.login = function* (req, res) {
     if (req.user) {
-        const token = auth_util.jwtSign(req.user.id, constants.TWENTY_FOUR_HOURS);
+        const token = auth_util.jwtSign(req.user.id, config.get('server.private_key'), constants.TWENTY_FOUR_HOURS);
         const user_output = mapper_util.mapUserOutput(req.user, token);
         res.json({ 
             ...user_output,
@@ -137,7 +139,12 @@ function* verifyAuthentication(req, res, next) {
     if (!token) {
         throw error_util.createError(401, 'No token provided');
     }
-    const decoded_user = yield auth_util.verifyJwt(token);
-    req.user = yield user_repository.getUserIfExists(decoded_user.id);
-    next();
+    try {
+        const decoded_user = yield auth_util.verifyJwt(token, config.get('server.private_key'));
+        req.user = yield user_repository.getUserIfExists(decoded_user.id);
+        next();
+    } catch (err) {
+        logger.debug(err);
+        throw error_util.createError(401, "Failed to authenticate token");
+    }
 }
