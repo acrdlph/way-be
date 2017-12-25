@@ -7,7 +7,7 @@ const sinon = require('sinon');
 const sinon_chai = require('sinon-chai');
 chai.use(sinon_chai);
 const mock_require = require('mock-require');
-mock_require('../app/repository/user', { 
+mock_require('../../app/repository/user', { 
     getUserForUsername: function* (user_id) {
         return {
             id: user_id,
@@ -15,7 +15,7 @@ mock_require('../app/repository/user', {
         }
     }
 });
-let users = require('../app/users');
+let users = require('../../app/users');
 
 describe('Users Controller', () => {
     describe('#getUserDetails', () => {        

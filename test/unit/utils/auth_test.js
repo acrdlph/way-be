@@ -4,10 +4,10 @@ require('co-mocha');
 const expect = require('chai').expect;
 const sinon = require('sinon');
 
-const test_helper = require('../test_helper');
+const test_helper = require('../../test_helper');
 
-let auth_util = require('../../app/utils/auth');
-let constants = require('../../app/utils/constants');
+let auth_util = require('../../../app/utils/auth');
+let constants = require('../../../app/utils/constants');
 
 const TEST_PRIVATE_KEY = 'vimukthi';
 const TEST_USER_ID = '12345';
