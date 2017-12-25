@@ -1,11 +1,11 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const co = require('co');
 const body_parser = require('body-parser');
 const passport = require('passport');
 
 const config = require('./config');
 const logger = require('./logger');
+const db = require('./utils/db');
 const controller = require('./utils/controller');
 const user_controller = require('./users');
 const accounts_controller = require('./accounts');
@@ -18,16 +18,7 @@ const uploader = require('./upload');
 // Set up default mongoose connection
 const mongo_user_string = config.get('database.user') ? `${config.get('database.user')}:${config.get('database.password')}@` : '';
 const mongo_db = `mongodb://${mongo_user_string}${config.get('database.host')}:${config.get('database.port')}/${config.get('database.name')}`;
-mongoose.Promise = global.Promise;
-mongoose.connect(mongo_db, {
-    useMongoClient: true
-});
-
-//Get the default connection
-const db = mongoose.connection;
-
-//Bind connection to error event (to get notification of connection errors)
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+db.init_mongoose(mongo_db);
 
 const app = express();
 

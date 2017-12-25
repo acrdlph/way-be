@@ -43,6 +43,7 @@
     "geocoder-geonames": "^0.1.2",
     "mocha": "^4.0.1",
     "mock-require": "^2.0.2",
+    "mockgoose-fix": "^7.3.6",
     "node-geocoder": "^3.21.1",
     "optimist": "^0.6.1",
     "request": "^2.83.0",
