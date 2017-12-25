@@ -2,16 +2,19 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const _ = require('lodash');
 
-const user_model = require('./models/user');
 const geo_user_model = require('./models/geo_user');
-const message_model = require('./models/message');
 const interaction_model = require('./models/interaction');
-const partner_model = require('./models/partner');
-const util = require('./util');
+const user_repository = require('./repository/user');
+const message_repository = require('./repository/message');
+const partner_repository = require('./repository/partner');
+const interaction_repository = require('./repository/interaction');
+const error_util = require('./utils/error');
+const auth_util = require('./utils/auth');
+const datetime_util = require('./utils/datetime');
+const mapper_util = require('./utils/mapper');
+const constants = require('./utils/constants');
 const config = require('./config');
 
-const USER_NEAR_BY_DISTANCE = 5000; // 5km
-const PARTNER_NEAR_BY_DISTANCE = 50000; // 50km
 const S3_USER_PHOTO_URL = (user, filename) =>
 `https://s3.${config.get('s3.users_bucket.region')}.amazonaws.com/${config.get('s3.users_bucket.name')}/${user.id}/${filename}`
 
@@ -21,17 +24,17 @@ const S3_USER_PHOTO_URL = (user, filename) =>
  * @param {*} res
  */
 exports.usersByUser = function* (req, res) {
-    const given_user = yield util.getUserIfExists(req.params.user_id);
+    const given_user = yield user_repository.getUserIfExists(req.params.user_id);
     let geo_near_users = [];
     if (given_user.geolocation) {
         geo_near_users = yield geo_user_model.find()
             .where('geolocation').near({
                 center: given_user.geolocation,
-                maxDistance: USER_NEAR_BY_DISTANCE
+                maxDistance: constants.USER_NEAR_BY_DISTANCE
             })
             .exec();
     }
-    const messages = yield message_model.find({ receiver_id: given_user.id });
+    const messages = yield message_repository.find({ receiver_id: given_user.id });
     const users = geo_near_users.map(user => {
         const filtered_messages = messages.filter(message => message.sender_id == user.id &&
                 message.receiver_id == given_user.id);
@@ -70,16 +73,16 @@ exports.usersByUser = function* (req, res) {
  * @param {*} res
  */
 exports.getUserDetails = function* (req, res) {
-    let user = yield util.getUserForUsername(req.params.user_id);
+    let user = yield user_repository.getUserForUsername(req.params.user_id);
     if (!user) {
-        user = yield util.getUserIfExists(req.params.user_id);
+        user = yield user_repository.getUserIfExists(req.params.user_id);
     }
     if(user.geolocation) {
-      const partners_nearby = yield partner_model.find({
+      const partners_nearby = yield partner_repository.find({
           geolocation: {
               $nearSphere: {
                   $geometry: user.geolocation,
-                  $maxDistance: PARTNER_NEAR_BY_DISTANCE
+                  $maxDistance: constants.PARTNER_NEAR_BY_DISTANCE
               }
           }
       });
@@ -89,7 +92,7 @@ exports.getUserDetails = function* (req, res) {
     }
 
     if (req.query.generate_url) {
-        const interaction_date = util.serverCurrentDate();
+        const interaction_date = datetime_util.serverCurrentDate();
         const interaction = new interaction_model({
             initiator: user.username, // username
             initiator_id: user.id,
@@ -97,11 +100,11 @@ exports.getUserDetails = function* (req, res) {
             geolocation: user.geolocation,
             created_at: interaction_date
         });
-        interaction.save();
+        interaction_repository.save(interaction);
         user.interaction_url = config.get('server.domain_name') + '/' + interaction.initiator + '/' +
             interaction.confirmation_code
     }
-    res.json(util.mapUserOutput(user));
+    res.json(mapper_util.mapUserOutput(user));
 }
 
 /**
@@ -114,7 +117,7 @@ exports.saveUser = function* (req, res) {
     let geolocation = req.body.geolocation;
     const name = req.body.name;
     const waiting_time = req.body.waiting_time || 30; // default 30 mins
-    if (!location && !geolocation) throw util.createError(400, "Please provide a location");
+    if (!location && !geolocation) throw error_util.createError(400, "Please provide a location");
     const longitude = _.get(geolocation, 'longitude');
     const latitude = _.get(geolocation, 'latitude');
     if (longitude && latitude) {
@@ -125,9 +128,9 @@ exports.saveUser = function* (req, res) {
     } else {
         geolocation = null;
     }
-    const new_user = yield util.createNewUser(name, waiting_time, location, geolocation);
-    const token = util.jwtSign(new_user.id);
-    res.json(util.mapUserOutput(new_user, token));
+    const new_user = yield user_repository.createNewUser(name, waiting_time, location, geolocation);
+    const token = auth_util.jwtSign(new_user.id, constants.TWENTY_FOUR_HOURS);
+    res.json(mapper_util.mapUserOutput(new_user, token));
 };
 
 /**
@@ -136,7 +139,7 @@ exports.saveUser = function* (req, res) {
  * @param {*} res
  */
 exports.updateUser = function* (req, res) {
-    const user = yield util.getUserIfExists(req.params.id);
+    const user = yield user_repository.getUserIfExists(req.params.id);
     user.location = req.body.location || user.location;
     user.geolocation = req.body.geolocation ? {
         type: 'Point',
@@ -146,20 +149,20 @@ exports.updateUser = function* (req, res) {
         ]
     } : user.geolocation;
     if (req.query.waiting_started === 'true') {
-        user.waiting_started_at = util.serverCurrentDate();
+        user.waiting_started_at = datetime_util.serverCurrentDate();
     }
     user.waiting_time = req.body.waiting_time || user.waiting_time;
     user.name = req.body.name || user.name;
     user.interests = req.body.interests || user.interests;
     yield user.save();
-    res.json(util.mapUserOutput(user));
+    res.json(mapper_util.mapUserOutput(user));
 };
 
 exports.updatePhoto = function* (req, res) {
-    const user = yield util.getUserIfExists(req.params.user_id);
+    const user = yield user_repository.getUserIfExists(req.params.user_id);
     user.photo = S3_USER_PHOTO_URL(user, req.file.standard_name);
     yield user.save();
-    res.json(util.mapUserOutput(user));
+    res.json(mapper_util.mapUserOutput(user));
 };
 
 function getMinTimeLeft(user1, user2) {
@@ -171,5 +174,5 @@ function getTimeLeft(user) {
     // is not available 
     const waiting_started_at = user.waiting_started_at || user.created_at;
     return moment(waiting_started_at).add(user.waiting_time, 'm')
-        .diff(util.serverCurrentDate(), 'minutes');
+        .diff(datetime_util.serverCurrentDate(), 'minutes');
 }

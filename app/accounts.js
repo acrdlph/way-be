@@ -1,14 +1,14 @@
 const co = require('co');
-const bcrypt = require('bcrypt');
 const validator = require('validator');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
-const geo_user_model = require('./models/geo_user');
-const util = require('./util');
-const logger = require('./logger');
-
-const PASSWORD_SALT_ROUNDS = 10;
+const user_repository = require('./repository/user');
+const error_util = require('./utils/error');
+const auth_util = require('./utils/auth');
+const datetime_util = require('./utils/datetime');
+const mapper_util = require('./utils/mapper');
+const constants = require('./utils/constants');
 
 /**
  * passport with our own db
@@ -35,7 +35,7 @@ passport.deserializeUser(function(id, done) {
 
 exports.checkUsername = function* (req, res) {
     const username = req.params.username;
-    const user = yield util.getUserForUsername(username);
+    const user = yield user_repository.getUserForUsername(username);
     if (user) {
         res.json({ exists: true });
     } else {
@@ -50,38 +50,38 @@ exports.signUp = function* (req, res) {
     const password = req.body.password;
 
     if (!username || !validator.isEmail(email) || !password) {
-        throw util.createError(400, "Username, Email(check format) and Password are required");
+        throw error_util.createError(400, "Username, Email(check format) and Password are required");
     }
-    const existing_username = yield util.getUserForUsername(username);
-    const existing_id_username = yield util.getUserForUsername(user_id);
-    const existing_email = yield util.getUserForEmail(email);
+    const existing_username = yield user_repository.getUserForUsername(username);
+    const existing_id_username = yield user_repository.getUserForUsername(user_id);
+    const existing_email = yield user_repository.getUserForEmail(email);
     if (existing_username || existing_id_username || existing_email) {
-        throw util.createError(400, "Username or email already exists");
+        throw error_util.createError(400, "Username or email already exists");
     }
-    const password_hash = yield getPasswordHash(password);
+    const password_hash = yield auth_util.getPasswordHash(password, constants.PASSWORD_SALT_ROUNDS);
     let user = false;
     if (user_id) {
-        user = yield util.getUserIfExists(user_id);
+        user = yield user_repository.getUserIfExists(user_id);
     }
     
     if (user) {
-        const signed_up = util.serverCurrentDate();
+        const signed_up = datetime_util.serverCurrentDate();
         user.username = username;
         user.email = email;
         user.password = password_hash;
         user.sign_up = signed_up;
-        yield user.save();
+        yield user_repository.save(user);
     } else {
-        user = yield util.createNewRegisteredUser(username, email, password_hash);
+        user = yield user_repository.createNewRegisteredUser(username, email, password_hash);
     }
-    const token = util.jwtSign(user.id);
-    res.json(util.mapUserOutput(user, token));
+    const token = auth_util.jwtSign(user.id, constants.TWENTY_FOUR_HOURS);
+    res.json(mapper_util.mapUserOutput(user, token));
 }
 
 exports.login = function* (req, res) {
     if (req.user) {
-        const token = util.jwtSign(req.user.id);
-        const user_output = util.mapUserOutput(req.user, token);
+        const token = auth_util.jwtSign(req.user.id, constants.TWENTY_FOUR_HOURS);
+        const user_output = mapper_util.mapUserOutput(req.user, token);
         res.json({ 
             ...user_output,
             auth: true
@@ -99,7 +99,7 @@ exports.logout = function* (req, res) {
 }
 
 function* passportLoginCallBack(loginname, password, done) {
-    const users = yield geo_user_model.find({
+    const users = yield user_repository.find({
         $or: [
             {
                 username: loginname
@@ -111,7 +111,7 @@ function* passportLoginCallBack(loginname, password, done) {
     });
     if (users.length == 1) {
         const user = users[0];
-        const verified = yield verifyPassword(password, user.password);
+        const verified = yield auth_util.verifyPassword(password, user.password);
         if (verified) {
             done(null, user);
         } else {
@@ -122,32 +122,6 @@ function* passportLoginCallBack(loginname, password, done) {
     }
 }
 
-function* verifyPassword(password, hash) {
-    const correct_pass = yield new Promise((resolve, reject) => {
-        bcrypt.compare(password, hash, function(err, res) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(res);
-            }
-        });
-    });
-    return correct_pass;
-}
-
-function* getPasswordHash(password) {
-    const password_hash = yield new Promise((resolve, reject) => {
-        bcrypt.hash(password, PASSWORD_SALT_ROUNDS, function(err, hash) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(hash);
-            }
-        });
-    });
-    return password_hash;
-}
-
 /**
  * Verifies authentication based on JWT token
  * @param {*} req 
@@ -156,14 +130,14 @@ function* getPasswordHash(password) {
  */
 exports.verifyAuthenticationMiddleWare = (req, res, next) => 
     co(verifyAuthentication(req, res, next))
-    .catch(err => util.handleError(req, res, err, { auth: false }));
+    .catch(err => error_util.handleError(req, res, err, { auth: false }));
 
 function* verifyAuthentication(req, res, next) {
     var token = req.headers['x-access-token'];
     if (!token) {
-        throw util.createError(401, 'No token provided');
+        throw error_util.createError(401, 'No token provided');
     }
-    const decoded_user = yield util.verifyJwt(token);
-    req.user = yield util.getUserIfExists(decoded_user.id);
+    const decoded_user = yield auth_util.verifyJwt(token);
+    req.user = yield user_repository.getUserIfExists(decoded_user.id);
     next();
 }
