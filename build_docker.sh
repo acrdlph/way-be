@@ -1,5 +1,16 @@
 #!/bin/sh
 
+echo "Running tests"
+
+npm test
+ret_code=$?
+if [ $ret_code != 0 ]; then
+    printf "Test failure, exiting\n"
+    exit $ret_code
+fi
+
+echo "Logging in to Docker repository"
+
 DOCKER_LOGIN="$(aws ecr get-login --no-include-email --region eu-central-1)"
 
 $DOCKER_LOGIN
