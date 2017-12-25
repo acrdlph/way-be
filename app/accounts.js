@@ -141,10 +141,10 @@ function* verifyAuthentication(req, res, next) {
     }
     try {
         const decoded_user = yield auth_util.verifyJwt(token, config.get('server.private_key'));
+        req.user = yield user_repository.getUserIfExists(decoded_user.id);
+        next();
     } catch (err) {
         logger.debug(err);
         throw error_util.createError(401, "Failed to authenticate token");
     }
-    req.user = yield user_repository.getUserIfExists(decoded_user.id);
-    next();
 }
