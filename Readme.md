@@ -10,6 +10,9 @@ A working installation of nodejs version 8.
 - Install auto reload server `npm install -g nodemon`
 - To start server run `npm run local`
 
+### Testing
+ We use `mocha` framework for tests. To run tests execute `npm test`.
+
 ### Running locally with docker
 
 - To build the docker image locally run `docker build -t waitlist:latest .`

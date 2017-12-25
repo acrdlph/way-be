@@ -129,7 +129,7 @@ exports.saveUser = function* (req, res) {
         geolocation = null;
     }
     const new_user = yield user_repository.createNewUser(name, waiting_time, location, geolocation);
-    const token = auth_util.jwtSign(new_user.id, constants.TWENTY_FOUR_HOURS);
+    const token = auth_util.jwtSign(new_user.id, config.get('server.private_key'), constants.TWENTY_FOUR_HOURS);
     res.json(mapper_util.mapUserOutput(new_user, token));
 };
 
