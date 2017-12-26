@@ -22,12 +22,12 @@ exports.savePartner = function* (req, res) {
     const geolocation = req.body.geolocation;
     const industry = req.body.industry;
     if ((!location && !geolocation) || !name || !unique_key) 
-        throw new error_util.createError(400, 'Please provide name, unique_key and one of the fields location or geolocation');
+        throw error_util.createError(400, 'Please provide name, unique_key and one of the fields location or geolocation');
     const longitude = _.get(geolocation, 'longitude');
     const latitude = _.get(geolocation, 'latitude');
     const existing_partner = yield partner_repository.find({unique_key: unique_key});
     if (existing_partner.length) 
-        throw new error_util.createError(400, 'Partner with the given unique key already exists'); 
+        throw error_util.createError(400, 'Partner with the given unique key already exists'); 
     const new_partner = new partner_model(
         {
             name: name,

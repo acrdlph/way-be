@@ -12,41 +12,25 @@ const logger = require('./logger');
 const ws_connections = {};
 
 const SOCKET_EVENTS = {
-    NEW_MESSAGE: 'NEW_MESSAGE'
+    NEW_MESSAGE: 'NEW_MESSAGE',
+    MESSAGE_DELIVERED: 'MESSAGE_DELIVERED'
 };
 
 /**
- * Get messages between provided sender and receiver
+ * Receive messages for logged in user from a given buddy
  * @param {*} req 
  * @param {*} res 
  */
-exports.getMessagesBySenderAndReceiver = function* (req, res) {
-    const sender = yield user_repository.getUserIfExists(req.query.sender_id);
-    const receiver = yield user_repository.getUserIfExists(req.query.receiver_id);
-    let messages = yield message_repository.find({
-        $or:
-            [
-                {
-                    sender_id: req.query.sender_id,
-                    receiver_id: req.query.receiver_id
-                },
-                {
-                    receiver_id: req.query.sender_id,
-                    sender_id: req.query.receiver_id
-                }
-            ]
-    }
+exports.receiveMessagesByBuddyForLoggedInUser = function* (req, res) {
+    const buddy = yield user_repository.getUserIfExists(req.query.buddy_id);
+    const messages = yield message_repository.findMessagesBetween(req.user.id, buddy.id);
+    const delivered_messages = yield messages.map(message => 
+        co(exports.mapToDelivered(req.user.id, message))
+        .catch(err => {
+            throw error_util.createError(500, err);
+        })
     );
-    messages = yield messages.map(message => co(function* () {
-        // this might not be a good solution because the client can ignore messages even though it downloads
-        // ideally the ui should make a call when the user actually sees the message to mark it as delivered
-        message.delivered = true;
-        yield message_repository.save(message);
-        return mapper_util.mapMessageOutput(message);
-    }).catch(err => {
-        throw new error_util.createError(500, err.getMessage());
-    }));
-    res.json(messages);
+    res.json(delivered_messages);
 }
 
 /**
@@ -60,8 +44,8 @@ exports.getMessagesBySenderAndReceiver = function* (req, res) {
  * - Delivered status can not be updated immediately. Solution: confirm delivery from a socket.io event triggered by client.
  * - How do we handle communication between two users who are connected to two different servers in the cluster?
  *      Suggested solution: Then the node which receives a message tries to check if the receiving user is connected to it self, if it is it will deliver.
- *                          if not it will just store the message(but resend to sender to confirm). Then each node will also have a background job running
- *                          to periodically check if the users who are connected to it have some undelivered messages and try to deliver.
+ *                          if not it will just store the message(but resend to sender to confirm). Clients already poll for available messages when they 
+ *                          are in waitlist screen so the messages will get delivered when they see the bubble and navigate to chat from the sender. (DONE)
  * - How do we handle users which have multiple devices connected? The above solution should track and send own messages as well.
  * 
  * @param {*} socket 
@@ -70,7 +54,12 @@ exports.initSocketConnection = function* (socket) {
     const {user_id} = socket.handshake.query;
     ws_connections[user_id] = socket;
     socket.on(SOCKET_EVENTS.NEW_MESSAGE, (msg) =>  
-        co(handleNewMessage(msg))
+        co(exports.handleNewMessage(msg))
+        .catch(err => logger.error(err))
+    );
+
+    socket.on(SOCKET_EVENTS.MESSAGE_DELIVERED, (message_id) =>  
+        co(exports.handleMessageDelivered(message_id))
         .catch(err => logger.error(err))
     );
 
@@ -78,31 +67,15 @@ exports.initSocketConnection = function* (socket) {
         logger.debug('user ' + user_id + ' disconnected because of ' + reason);
         delete ws_connections[user_id];
     });
-
-    // send undelivered messages
-    setTimeout(() => co(function* () {
-        const undelivered_messages = yield message_repository.find(
-            {
-                receiver_id: user_id,
-                delivered: false
-            }
-        )
-        logger.debug('undelivered_messages for ' + user_id, undelivered_messages);
-        if (undelivered_messages.length) {
-            undelivered_messages.forEach(msg => co(function* () {
-                logger.debug('sending unsent messages');
-                msg.delivered = true;
-                ws_connections[user_id].emit(SOCKET_EVENTS.NEW_MESSAGE, mapper_util.mapMessageOutput(msg));
-                yield msg.save();
-            }).catch(err => {
-                logger.error(err);
-            }));
-        }
-    }), 30);
 }
 
-function* handleNewMessage(msg) {
+/**
+ * exported for testing
+ * @param {*} msg 
+ */
+exports.handleNewMessage = function* handleNewMessage(msg) {
     msg.created_at = datetime_util.serverCurrentDate();
+    msg.delivered = false;
     const new_message = new message_model(msg);
     // save to generate db ID
     yield message_repository.save(new_message);
@@ -110,21 +83,49 @@ function* handleNewMessage(msg) {
 
     // send to the destination
     if (new_message.receiver_id in ws_connections) {
-        new_message.delivered = true;
-        ws_connections[new_message.receiver_id].emit(SOCKET_EVENTS.NEW_MESSAGE, 
-            mapper_util.mapMessageOutput(new_message));
+        exports.sendMessage(new_message.receiver_id, new_message);
     } else {
         logger.warn('receiver not connected', new_message.receiver_id);
-        new_message.delivered = false;
     }
 
     // sending back to sender to confirm 
     if (new_message.sender_id in ws_connections) {
-        ws_connections[new_message.sender_id].emit(SOCKET_EVENTS.NEW_MESSAGE, 
-            mapper_util.mapMessageOutput(new_message));
+        exports.sendMessage(new_message.sender_id, new_message);
     } else {
         logger.error('sender went offline ', new_message.sender_id);
     }
     // save to store delivered status
     message_repository.save(new_message);
+}
+
+/**
+ * exported for testing
+ * @param {*} message_id 
+ */
+exports.handleMessageDelivered = function* handleMessageDelivered(message_id) {
+    const message = yield message_repository.findById(message_id);
+    yield exports.mapToDelivered(message.receiver_id, message);
+} 
+
+/**
+ * exported for testing
+ * @param {*} message 
+ */
+exports.mapToDelivered = function* mapToDelivered(receiver_id, message) {
+    // if the messages receiver is the given receiver_id mark it as delivered
+    if (!message.delivered && message.receiver_id == receiver_id) {
+        message.delivered = true;
+        yield message_repository.save(message);
+    }
+    return mapper_util.mapMessageOutput(message);
+}
+
+/**
+ * exported for testing
+ * @param {*} receiver_id 
+ * @param {*} message 
+ */
+exports.sendMessage = function sendMessage(receiver_id, message) {
+    ws_connections[receiver_id].emit(
+        SOCKET_EVENTS.NEW_MESSAGE, mapper_util.mapMessageOutput(message));
 }

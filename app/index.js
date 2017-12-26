@@ -73,8 +73,8 @@ app.post('/partners', (req, res) =>
     controller.mainControlller(partner_controller.savePartner, req, res)
 );
 
-app.get('/messages', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
-    controller.mainControlller(message_controller.getMessagesBySenderAndReceiver, req, res)
+app.post('/messages/receive', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
+    controller.mainControlller(message_controller.receiveMessagesByBuddyForLoggedInUser, req, res)
 );
 
 app.get('/accounts/checkname/:username', (req, res) =>
