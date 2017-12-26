@@ -9,6 +9,10 @@ const datetime_util = require('./utils/datetime');
 const mapper_util = require('./utils/mapper');
 const logger = require('./logger');
 
+/**
+ * This is an index for all sockets currently handled by the server
+ * indexed by user_id, socket_id combination
+ */
 const ws_connections = {};
 
 const SOCKET_EVENTS = {
@@ -46,13 +50,14 @@ exports.receiveMessagesByBuddyForLoggedInUser = function* (req, res) {
  *      Suggested solution: Then the node which receives a message tries to check if the receiving user is connected to it self, if it is it will deliver.
  *                          if not it will just store the message(but resend to sender to confirm). Clients already poll for available messages when they 
  *                          are in waitlist screen so the messages will get delivered when they see the bubble and navigate to chat from the sender. (DONE)
- * - How do we handle users which have multiple devices connected? The above solution should track and send own messages as well.
+ * - How do we handle users which have multiple devices connected? The above solution should track and send own messages as well.(DONE)
  * 
  * @param {*} socket 
  */
 exports.initSocketConnection = function* (socket) {
     const {user_id} = socket.handshake.query;
-    ws_connections[user_id] = socket;
+    ws_connections[user_id] = ws_connections[user_id] || {};
+    ws_connections[user_id][socket.id] = socket;
     socket.on(SOCKET_EVENTS.NEW_MESSAGE, (msg) =>  
         co(exports.handleNewMessage(msg))
         .catch(err => logger.error(err))
@@ -65,7 +70,7 @@ exports.initSocketConnection = function* (socket) {
 
     socket.on('disconnect', function (reason) {
         logger.debug('user ' + user_id + ' disconnected because of ' + reason);
-        delete ws_connections[user_id];
+        delete ws_connections[user_id][socket.id];
     });
 }
 
@@ -124,6 +129,10 @@ exports.mapToDelivered = function* mapToDelivered(receiver_id, message) {
  * @param {*} message 
  */
 exports.sendMessage = function sendMessage(receiver_id, message) {
-    ws_connections[receiver_id].emit(
-        SOCKET_EVENTS.NEW_MESSAGE, mapper_util.mapMessageOutput(message));
+    // send to all sockets attributed to the given receiver_id
+    // i.e all sessions/browsers/devices of the user with the given receiver_id
+    Object.keys(ws_connections[receiver_id]).forEach((socket_id) => {
+        ws_connections[receiver_id][socket_id].emit(
+            SOCKET_EVENTS.NEW_MESSAGE, mapper_util.mapMessageOutput(message));
+    });
 }
