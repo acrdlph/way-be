@@ -5,6 +5,7 @@ const passport = require('passport');
 
 const config = require('./config');
 const logger = require('./logger');
+const auth = require('./utils/auth');
 const db = require('./utils/db');
 const controller = require('./utils/controller');
 const user_controller = require('./users');
@@ -104,13 +105,29 @@ app.post('/interactions/:username/:confirmation_code', (req, res) =>
 );
 
 const server = app.listen(3001, () => logger.info('Waitlist API listening on port 3001!'));
+
+// socket.io initialization
 const socketio_options = {
     pingTimeout: 3000,
     pingInterval: 3000
 };
 const io = require('socket.io')(server, socketio_options)
-    .of('/messaging')
-    .on('connection', (socket) => 
-        co(message_controller.initSocketConnection(socket))
-        .catch(err => logger.error(err))
-    );
+io.use((socket, next) => co(function* () {
+        // handle auth for sockets
+        const token = socket.handshake.query.token;
+        try {
+            yield auth.verifyJwt(token, config.get('server.private_key'));
+            return next();
+        } catch (err) {
+            logger.warn(err);
+            return next(new Error('authentication error'));
+        }
+    }).catch(err => logger.error(err))
+)
+io.of('/messaging')
+.on('connection', (socket) => 
+    co(message_controller.initSocketConnection(socket))
+    .catch(err => logger.error(err))
+);
+
+    
