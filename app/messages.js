@@ -94,8 +94,6 @@ exports.handleNewMessage = function* handleNewMessage(msg) {
     } else {
         logger.error('sender went offline ', new_message.sender_id);
     }
-    // save to store delivered status
-    message_repository.save(new_message);
 }
 
 /**
