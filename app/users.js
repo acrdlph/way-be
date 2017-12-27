@@ -1,4 +1,3 @@
-const moment = require('moment');
 const mongoose = require('mongoose');
 const _ = require('lodash');
 
@@ -11,6 +10,7 @@ const interaction_repository = require('./repository/interaction');
 const error_util = require('./utils/error');
 const auth_util = require('./utils/auth');
 const datetime_util = require('./utils/datetime');
+const db_util = require('./utils/db');
 const mapper_util = require('./utils/mapper');
 const constants = require('./utils/constants');
 const config = require('./config');
@@ -27,43 +27,13 @@ exports.usersByUser = function* (req, res) {
     const given_user = yield user_repository.getUserIfExists(req.params.user_id);
     let geo_near_users = [];
     if (given_user.geolocation) {
-        geo_near_users = yield geo_user_model.find()
-            .where('geolocation').near({
-                center: given_user.geolocation,
-                maxDistance: constants.USER_NEAR_BY_DISTANCE
-            })
-            .exec();
+        geo_near_users = yield user_repository.nearByUsers(given_user.geolocation);
     }
     const messages = yield message_repository.find({ receiver_id: given_user.id });
-    const users = geo_near_users.map(user => {
-        const filtered_messages = messages.filter(message => message.sender_id == user.id &&
-                message.receiver_id == given_user.id);
-        const non_delivered_messages = filtered_messages.filter(message => message.delivered === false);
-        // sort so that we can get the last contact time
-        filtered_messages.sort((message1, message2) => {
-            const message1_time = message1.created_at.getTime();
-            const message2_time = message2.created_at.getTime();
-            if (message1_time > message2_time) {
-                return -1;
-            }
-            if (message1_time < message2_time) {
-                return 1;
-            }
-            return 0;
-        });
-        return {
-            id: user.id,
-            name: user.name,
-            default_name: user.default_name,
-            interests: user.interests,
-            location: user.location,
-            photo: user.photo,
-            time_left: getMinTimeLeft(user, given_user),
-            count: filtered_messages.length,
-            non_delivered_count: non_delivered_messages.length,
-            last_contact: filtered_messages.length > 0 ? filtered_messages[0].created_at : null
-        }
-    }).filter(user => (user.time_left > 0 || user.count > 0) && user.id != given_user.id);
+    
+    const users = geo_near_users
+        .map(user => mapper_util.waitlistBuddy(given_user, user, messages))
+        .filter(user => (user.time_left > 0 || user.count > 0) && user.id != given_user.id);
     res.json(users);
 };
 
@@ -78,14 +48,7 @@ exports.getUserDetails = function* (req, res) {
         user = yield user_repository.getUserIfExists(req.params.user_id);
     }
     if(user.geolocation) {
-      const partners_nearby = yield partner_repository.find({
-          geolocation: {
-              $nearSphere: {
-                  $geometry: user.geolocation,
-                  $maxDistance: constants.PARTNER_NEAR_BY_DISTANCE
-              }
-          }
-      });
+      const partners_nearby = yield partner_repository.nearBy(user.geolocation);
       if (partners_nearby.length) {
           user.location = partners_nearby[0].location;
       }
@@ -121,10 +84,7 @@ exports.saveUser = function* (req, res) {
     const longitude = _.get(geolocation, 'longitude');
     const latitude = _.get(geolocation, 'latitude');
     if (longitude && latitude) {
-        geolocation = {
-            type: 'Point',
-            coordinates: [ parseFloat(longitude), parseFloat(latitude) ]
-        };
+        geolocation = db_util.constructPoint(parseFloat(longitude), parseFloat(latitude));
     } else {
         geolocation = null;
     }
@@ -141,13 +101,12 @@ exports.saveUser = function* (req, res) {
 exports.updateUser = function* (req, res) {
     const user = yield user_repository.getUserIfExists(req.params.id);
     user.location = req.body.location || user.location;
-    user.geolocation = req.body.geolocation ? {
-        type: 'Point',
-        coordinates: [
-            parseFloat(req.body.geolocation.longitude),
-            parseFloat(req.body.geolocation.latitude)
-        ]
-    } : user.geolocation;
+    
+    user.geolocation = req.body.geolocation ? 
+        db_util.constructPoint(
+            parseFloat(req.body.geolocation.longitude), 
+            parseFloat(req.body.geolocation.latitude)) 
+            : user.geolocation;
     if (req.query.waiting_started === 'true') {
         user.waiting_started_at = datetime_util.serverCurrentDate();
     }
@@ -164,15 +123,3 @@ exports.updatePhoto = function* (req, res) {
     yield user.save();
     res.json(mapper_util.mapUserOutput(user));
 };
-
-function getMinTimeLeft(user1, user2) {
-    return Math.min(getTimeLeft(user1), getTimeLeft(user2));
-}
-
-function getTimeLeft(user) {
-    // for backward compatibility set waiting_started_at=created_at if waiting_started_at 
-    // is not available 
-    const waiting_started_at = user.waiting_started_at || user.created_at;
-    return moment(waiting_started_at).add(user.waiting_time, 'm')
-        .diff(datetime_util.serverCurrentDate(), 'minutes');
-}

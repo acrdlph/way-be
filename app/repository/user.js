@@ -96,3 +96,18 @@ exports.createNewUser = function* createNewUser(name, waiting_time, location, ge
     yield new_user.save();
     return new_user;
 }
+
+/**
+ * 
+ * @param {*} geolocation 
+ */
+exports.nearByUsers = function* nearByUsers(geolocation) {
+    const geo_near_users = yield user_model.find()
+            .where('geolocation').near({
+                center: geolocation,
+                maxDistance: constants.USER_NEAR_BY_DISTANCE
+            })
+            .exec();
+    return geo_near_users;
+}
+

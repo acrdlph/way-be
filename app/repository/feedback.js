@@ -5,7 +5,7 @@ const feedback_model = require('../models/feedback');
  */
 
 exports.find = function* find(query) {
-    const result = yield user_model.find(query);
+    const result = yield feedback_model.find(query);
     return result;
 }
 

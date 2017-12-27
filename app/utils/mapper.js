@@ -1,4 +1,7 @@
 const _ = require('lodash');
+const moment = require('moment');
+const message_util = require('./message');
+const datetime_util = require('./datetime');
 
 exports.mapUserOutput = function mapUserOutput(user, token) {
     return {
@@ -32,4 +35,36 @@ exports.mapMessageOutput = function mapMessageOutput(msg) {
         delivered: msg.delivered,
         created_at: msg.created_at
     }
+}
+
+exports.waitlistBuddy = function waitlistBuddy(user, buddy, messages) {
+    const filtered_messages = messages.filter(message => message.sender_id == buddy.id &&
+        message.receiver_id == user.id);
+    const non_delivered_messages = filtered_messages.filter(message => message.delivered === false);
+    // sort so that we can get the last contact time
+    filtered_messages.sort(message_util.messageDateSortComparator);
+    return {
+        id: buddy.id,
+        name: buddy.name,
+        default_name: buddy.default_name,
+        interests: buddy.interests,
+        location: buddy.location,
+        photo: buddy.photo,
+        time_left: exports.getMinTimeLeft(buddy, user),
+        count: filtered_messages.length,
+        non_delivered_count: non_delivered_messages.length,
+        last_contact: filtered_messages.length > 0 ? filtered_messages[0].created_at : null
+    }
+}
+
+exports.getMinTimeLeft = function getMinTimeLeft(user1, user2) {
+    return Math.min(exports.getTimeLeft(user1), exports.getTimeLeft(user2));
+}
+
+exports.getTimeLeft = function getTimeLeft(user) {
+    // for backward compatibility set waiting_started_at=created_at if waiting_started_at 
+    // is not available 
+    const waiting_started_at = user.waiting_started_at || user.created_at;
+    return moment(waiting_started_at).add(user.waiting_time, 'm')
+        .diff(datetime_util.serverCurrentDate(), 'minutes');
 }

@@ -4,6 +4,7 @@ const partner_model = require('./models/partner');
 const partner_repository = require('./repository/partner');
 const error_util = require('./utils/error');
 const datetime_util = require('./utils/datetime');
+const db_util = require('./utils/db');
 
 /**
  * save a new partner
@@ -39,10 +40,8 @@ exports.savePartner = function* (req, res) {
             unique_key: unique_key,
             industry: industry,
             location: location,
-            geolocation: longitude && latitude ? {
-                type: 'Point',
-                coordinates: [ parseFloat(longitude), parseFloat(latitude) ]
-            } : null,
+            geolocation: longitude && latitude ? 
+                db_util.constructPoint(parseFloat(longitude), parseFloat(latitude)) : null,
             created_at: datetime_util.serverCurrentDate()
         });
     yield partner_repository.save(new_partner);
