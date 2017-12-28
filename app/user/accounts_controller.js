@@ -3,14 +3,14 @@ const validator = require('validator');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
-const config = require('./config');
-const logger = require('./logger');
-const user_repository = require('./repository/user');
-const error_util = require('./utils/error');
-const auth_util = require('./utils/auth');
-const datetime_util = require('./utils/datetime');
-const mapper_util = require('./utils/mapper');
-const constants = require('./utils/constants');
+const config = require('../config');
+const logger = require('../logger');
+const user_repository = require('./user_repository');
+const error_util = require('../utils/error');
+const auth_util = require('../utils/auth');
+const datetime_util = require('../utils/datetime');
+const mapper_util = require('../utils/mapper');
+const constants = require('../utils/constants');
 
 /**
  * passport with our own db

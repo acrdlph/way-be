@@ -1,19 +1,18 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
 
-const geo_user_model = require('./models/geo_user');
-const interaction_model = require('./models/interaction');
-const user_repository = require('./repository/user');
-const message_repository = require('./repository/message');
-const partner_repository = require('./repository/partner');
-const interaction_repository = require('./repository/interaction');
-const error_util = require('./utils/error');
-const auth_util = require('./utils/auth');
-const datetime_util = require('./utils/datetime');
-const db_util = require('./utils/db');
-const mapper_util = require('./utils/mapper');
-const constants = require('./utils/constants');
-const config = require('./config');
+const interaction_model = require('../interaction/interaction_model');
+const user_repository = require('./user_repository');
+const message_repository = require('../message/message_repository');
+const partner_repository = require('../partner/partner_repository');
+const interaction_repository = require('../interaction/interaction_repository');
+const error_util = require('../utils/error');
+const auth_util = require('../utils/auth');
+const datetime_util = require('../utils/datetime');
+const db_util = require('../utils/db');
+const mapper_util = require('../utils/mapper');
+const constants = require('../utils/constants');
+const config = require('../config');
 
 const S3_USER_PHOTO_URL = (user, filename) =>
 `https://s3.${config.get('s3.users_bucket.region')}.amazonaws.com/${config.get('s3.users_bucket.name')}/${user.id}/${filename}`
@@ -63,7 +62,7 @@ exports.getUserDetails = function* (req, res) {
             geolocation: user.geolocation,
             created_at: interaction_date
         });
-        interaction_repository.save(interaction);
+        yield interaction_repository.save(interaction);
         user.interaction_url = config.get('server.domain_name') + '/' + interaction.initiator + '/' +
             interaction.confirmation_code
     }

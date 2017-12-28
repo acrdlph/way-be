@@ -1,7 +1,7 @@
 const constants = require('../utils/constants');
 const datetime_util = require('../utils/datetime');
-const role_model = require('../models/role');
-const user_repository = require('./user');
+const role_model = require('./role_model');
+const user_repository = require('./user_repository');
 
 /**
  * Temp function to migrate the db when first launching roles

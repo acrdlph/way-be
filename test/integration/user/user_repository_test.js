@@ -3,8 +3,8 @@ require('co-mocha');
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const test_db = require('../../test_db');
-const user_model = require('../../../app/models/geo_user');
-const user_repository = require('../../../app/repository/user');
+const user_model = require('../../../app/user/geo_user_model');
+const user_repository = require('../../../app/user/user_repository');
 const db_util = require('../../../app/utils/db');
 
 let mockgoose;

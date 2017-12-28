@@ -1,4 +1,4 @@
-const partner_model = require('../models/partner');
+const partner_model = require('./partner_model');
 const constants = require('../utils/constants');
 
 exports.find = function* find(query) {

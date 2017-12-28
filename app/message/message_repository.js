@@ -1,4 +1,4 @@
-const message_model = require('../models/message');
+const message_model = require('./message_model');
 
 exports.find = function* find(query) {
     const result = yield message_model.find(query);
@@ -45,6 +45,6 @@ exports.findMessagesBetween = function* findMessagesBetween(sender_id, receiver_
 }
 
 exports.findByReceiver = function* (user_id) {
-    const messages = yield message_repository.find({ receiver_id: user_id });
+    const messages = yield message_model.find({ receiver_id: user_id });
     return messages;
 }

@@ -1,8 +1,8 @@
 
-const user_repository = require('./repository/user');
-const interaction_repository = require('./repository/interaction');
-const error_util = require('./utils/error');
-const datetime_util = require('./utils/datetime');
+const user_repository = require('../user/user_repository');
+const interaction_repository = require('./interaction_repository');
+const error_util = require('../utils/error');
+const datetime_util = require('../utils/datetime');
 
 exports.verifyInteraction = function* verifyInteraction(req, res) {
     const confirmation_code = req.params.confirmation_code;

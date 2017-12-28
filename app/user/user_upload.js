@@ -4,14 +4,14 @@ const multerS3 = require('multer-s3');
 const co = require('co');
 const mimetypes = require('mime-types');
 
-const config = require('./config');
-const logger = require('./logger');
-const user_repository = require('./repository/user');
-const datetime_util = require('./utils/datetime');
+const config = require('../config');
+const logger = require('../logger');
+const user_repository = require('./user_repository');
+const datetime_util = require('../utils/datetime');
 
 const s3 = new aws.S3();
 
-exports.user_upload = multer({
+exports.photo = multer({
     storage: multerS3({
         s3: s3,
         bucket: config.get('s3.users_bucket.name'),

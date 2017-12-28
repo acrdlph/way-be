@@ -9,13 +9,13 @@ const auth = require('./utils/auth');
 const db = require('./utils/db');
 const migration = require('./utils/migration');
 const controller = require('./utils/controller');
-const user_controller = require('./users');
-const accounts_controller = require('./accounts');
-const interactions_controller = require('./interactions');
-const partner_controller = require('./partners');
-const message_controller = require('./messages');
-const feedback_controller = require('./feedback');
-const uploader = require('./upload');
+const user_controller = require('./user/user_controller');
+const accounts_controller = require('./user/accounts_controller');
+const interactions_controller = require('./interaction/interaction_controller');
+const partner_controller = require('./partner/partner_controller');
+const message_controller = require('./message/message_controller');
+const feedback_controller = require('./feedback/feedback_controller');
+const user_uploader = require('./user/user_upload');
 
 // Set up default mongoose connection
 const mongo_user_string = config.get('database.user') ? `${config.get('database.user')}:${config.get('database.password')}@` : '';
@@ -60,7 +60,7 @@ app.put('/users/:id', accounts_controller.verifyAuthenticationMiddleWare, (req, 
 
 app.post('/users/:user_id/photo', 
     accounts_controller.verifyAuthenticationMiddleWare, 
-    uploader.user_upload.single('photo'), 
+    user_uploader.photo.single('photo'), 
     (req, res) =>
         controller.mainControlller(user_controller.updatePhoto, req, res)
 );

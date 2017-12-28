@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const user_model = require('../models/geo_user');
+const user_model = require('./geo_user_model');
 const error_util = require('../utils/error');
 const datetime_util = require('../utils/datetime');
 const constants = require('../utils/constants');

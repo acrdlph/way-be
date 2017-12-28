@@ -1,4 +1,4 @@
-const interaction_model = require('../models/interaction');
+const interaction_model = require('./interaction_model');
 
 exports.find = function* find(query) {
     const result = yield interaction_model.find(query);

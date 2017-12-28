@@ -1,7 +1,7 @@
 const geojson = require('mongoose-geojson-schema');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const standardUser = require('./standard_user');
+const standardUser = require('./standard_user_model');
 
 const geoUser = {
   ...standardUser,

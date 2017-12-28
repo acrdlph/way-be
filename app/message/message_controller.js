@@ -1,13 +1,13 @@
 const co = require('co');
 const moment = require('moment');
 
-const message_model = require('./models/message');
-const message_repository = require('./repository/message');
-const user_repository = require('./repository/user');
-const error_util = require('./utils/error');
-const datetime_util = require('./utils/datetime');
-const mapper_util = require('./utils/mapper');
-const logger = require('./logger');
+const message_model = require('./message_model');
+const message_repository = require('./message_repository');
+const user_repository = require('../user/user_repository');
+const error_util = require('../utils/error');
+const datetime_util = require('../utils/datetime');
+const mapper_util = require('../utils/mapper');
+const logger = require('../logger');
 
 /**
  * This is an index for all sockets currently handled by the server

@@ -1,10 +1,10 @@
 const _ = require('lodash');
-const partner_model = require('./models/partner');
 
-const partner_repository = require('./repository/partner');
-const error_util = require('./utils/error');
-const datetime_util = require('./utils/datetime');
-const db_util = require('./utils/db');
+const partner_model = require('./partner_model');
+const partner_repository = require('./partner_repository');
+const error_util = require('../utils/error');
+const datetime_util = require('../utils/datetime');
+const db_util = require('../utils/db');
 
 /**
  * save a new partner

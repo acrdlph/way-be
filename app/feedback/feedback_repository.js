@@ -1,4 +1,4 @@
-const feedback_model = require('../models/feedback');
+const feedback_model = require('./feedback_model');
 
 /**
  * TODO create a base repository for these
