@@ -25,16 +25,8 @@ const S3_USER_PHOTO_URL = (user, filename) =>
  */
 exports.usersByUser = function* (req, res) {
     const given_user = yield user_repository.getUserIfExists(req.params.user_id);
-    // concurrently retrieve matching waitlist users for the given user
-    const matched_user_arrays = yield user_matchers
-                                        .matchers
-                                        .map(matcher => matcher(given_user, {}));
-    const matched_users = _(matched_user_arrays)
-                                .flatMap()
-                                .uniqBy('_id')
-                                .value();
+    const matched_users = yield user_matchers.matchUsersToUser(given_user);
     const messages = yield message_repository.findByReceiver(given_user.id);
-    
     const users = matched_users
         .map(user => mapper_util.waitlistBuddy(given_user, user, messages))
         .filter(
