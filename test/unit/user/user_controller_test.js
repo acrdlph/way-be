@@ -7,17 +7,28 @@ const sinon = require('sinon');
 const sinon_chai = require('sinon-chai');
 chai.use(sinon_chai);
 const mock_require = require('mock-require');
-mock_require('../../../app/user/user_repository', { 
-    getUserForUsername: function* (user_id) {
-        return {
-            id: user_id,
-            name: 'test_user'
-        }
-    }
-});
-let users = require('../../../app/user/user_controller');
+const test_helper = require('../../test_helper');
 
-describe('Users Controller', () => {
+let users;
+
+describe('User Controller', () => {
+
+    before(function* () {
+        mock_require('../../../app/user/user_repository', { 
+            getUserForUsername: function* (user_id) {
+                return {
+                    id: user_id,
+                    name: 'test_user'
+                };
+            }
+        });
+        users = mock_require.reRequire('../../../app/user/user_controller');
+    });
+
+    after(function* () {
+        mock_require.stopAll();
+    });
+
     describe('#getUserDetails', () => {        
         it('should send user json correctly', function* () {
             const req = {
@@ -31,7 +42,12 @@ describe('Users Controller', () => {
             const res = {
                 json: sinon.spy()
             }
-            yield users.getUserDetails(req, res);
+            try {
+                yield users.getUserDetails(req, res);
+            } catch(err) {
+                test_helper.fail();
+            }
+            
             expect(res.json).to.be.calledWith({
                 created_at: undefined,
                 default_name: undefined,

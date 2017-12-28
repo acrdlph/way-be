@@ -25,3 +25,7 @@ exports.tryWithFailure = function* (promise, exception_name) {
         expect(err.name).to.equal(exception_name);
     }
 }
+
+exports.fail = function fail() {
+    expect(true).to.equal(false); 
+}
