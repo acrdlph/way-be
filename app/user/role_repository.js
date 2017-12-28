@@ -30,6 +30,11 @@ exports.migrate = function* migrate() {
     }
 }
 
+exports.findByName = function* findByName(name) {
+    const role = yield role_model.findOne({name: name});
+    return role;
+}
+
 exports.save = function* save(feedback) {
     const result = yield feedback.save();
     return result;

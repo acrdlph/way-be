@@ -46,10 +46,12 @@ exports.waitlistBuddy = function waitlistBuddy(user, buddy, messages) {
     return {
         id: buddy.id,
         name: buddy.name,
+        username: buddy.username,
         default_name: buddy.default_name,
         interests: buddy.interests,
         location: buddy.location,
         photo: buddy.photo,
+        god_user: buddy.god_user,
         time_left: exports.getMinTimeLeft(buddy, user),
         count: filtered_messages.length,
         non_delivered_count: non_delivered_messages.length,

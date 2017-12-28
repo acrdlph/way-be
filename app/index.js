@@ -73,8 +73,10 @@ app.get('/partners/search', (req, res) =>
     controller.mainControlller(partner_controller.savePartnersForGeoQuery, req, res)
 );
 
-app.post('/partners', (req, res) =>
-    controller.mainControlller(partner_controller.savePartner, req, res)
+app.post('/partners', 
+    accounts_controller.verifyAuthenticationMiddleWare, 
+    (req, res) =>
+        controller.mainControlller(partner_controller.savePartner, req, res)
 );
 
 app.post('/messages/receive', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>

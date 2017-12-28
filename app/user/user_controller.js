@@ -3,6 +3,7 @@ const _ = require('lodash');
 
 const interaction_model = require('../interaction/interaction_model');
 const user_repository = require('./user_repository');
+const user_matchers = require('./user_matchers');
 const message_repository = require('../message/message_repository');
 const partner_repository = require('../partner/partner_repository');
 const interaction_repository = require('../interaction/interaction_repository');
@@ -24,15 +25,25 @@ const S3_USER_PHOTO_URL = (user, filename) =>
  */
 exports.usersByUser = function* (req, res) {
     const given_user = yield user_repository.getUserIfExists(req.params.user_id);
-    let geo_near_users = [];
-    if (given_user.geolocation) {
-        geo_near_users = yield user_repository.nearByUsers(given_user.geolocation);
-    }
+    // concurrently retrieve matching waitlist users for the given user
+    const matched_user_arrays = yield user_matchers
+                                        .matchers
+                                        .map(matcher => matcher(given_user, {}));
+    const matched_users = _(matched_user_arrays)
+                                .flatMap()
+                                .uniqBy('_id')
+                                .value();
     const messages = yield message_repository.findByReceiver(given_user.id);
     
-    const users = geo_near_users
+    const users = matched_users
         .map(user => mapper_util.waitlistBuddy(given_user, user, messages))
-        .filter(user => (user.time_left > 0 || user.count > 0) && user.id != given_user.id);
+        .filter(
+            user => (
+                user.time_left > 0 ||
+                user.count > 0 ||
+                user.god_user
+            ) &&
+            user.id != given_user.id);
     res.json(users);
 };
 

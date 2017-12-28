@@ -6,6 +6,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const config = require('../config');
 const logger = require('../logger');
 const user_repository = require('./user_repository');
+const role_repository = require('./role_repository');
 const error_util = require('../utils/error');
 const auth_util = require('../utils/auth');
 const datetime_util = require('../utils/datetime');
@@ -67,11 +68,13 @@ exports.signUp = function* (req, res) {
     }
     
     if (user) {
+        const user_role = yield role_repository.findByName(constants.USER_ROLES.USER.name);
         const signed_up = datetime_util.serverCurrentDate();
         user.username = username;
         user.email = email;
         user.password = password_hash;
         user.sign_up = signed_up;
+        user.roles = [user_role._id];
         yield user_repository.save(user);
     } else {
         user = yield user_repository.createNewRegisteredUser(username, email, password_hash);
