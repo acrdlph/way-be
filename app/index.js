@@ -7,6 +7,7 @@ const config = require('./config');
 const logger = require('./logger');
 const auth = require('./utils/auth');
 const db = require('./utils/db');
+const migration = require('./utils/migration');
 const controller = require('./utils/controller');
 const user_controller = require('./users');
 const accounts_controller = require('./accounts');
@@ -20,6 +21,8 @@ const uploader = require('./upload');
 const mongo_user_string = config.get('database.user') ? `${config.get('database.user')}:${config.get('database.password')}@` : '';
 const mongo_db = `mongodb://${mongo_user_string}${config.get('database.host')}:${config.get('database.port')}/${config.get('database.name')}`;
 db.init_mongoose(mongo_db);
+
+migration.runMigrations();
 
 const app = express();
 

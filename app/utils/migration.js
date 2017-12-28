@@ -1,3 +1,4 @@
+const co = require('co');
 const role_repository = require('../repository/role');
 
 exports.runMigrations = function runMigrations() {
