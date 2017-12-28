@@ -29,7 +29,7 @@ exports.usersByUser = function* (req, res) {
     if (given_user.geolocation) {
         geo_near_users = yield user_repository.nearByUsers(given_user.geolocation);
     }
-    const messages = yield message_repository.find({ receiver_id: given_user.id });
+    const messages = yield message_repository.findByReceiver(given_user.id);
     
     const users = geo_near_users
         .map(user => mapper_util.waitlistBuddy(given_user, user, messages))

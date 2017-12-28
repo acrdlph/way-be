@@ -43,3 +43,8 @@ exports.findMessagesBetween = function* findMessagesBetween(sender_id, receiver_
     );
     return messages;
 }
+
+exports.findByReceiver = function* (user_id) {
+    const messages = yield message_repository.find({ receiver_id: user_id });
+    return messages;
+}

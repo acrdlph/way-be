@@ -1,3 +1,6 @@
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
 module.exports = {
     name: String,
     username: String,
@@ -10,6 +13,7 @@ module.exports = {
     location: String,
     photo: String,
     points: Number,
+    roles: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
     signed_up: Date,
     created_at: Date
 }
