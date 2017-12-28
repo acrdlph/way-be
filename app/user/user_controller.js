@@ -3,7 +3,9 @@ const _ = require('lodash');
 
 const interaction_model = require('../interaction/interaction_model');
 const user_repository = require('./user_repository');
+const role_repository = require('./role_repository');
 const user_matchers = require('./user_matchers');
+const user_helper = require('./user_helper');
 const message_repository = require('../message/message_repository');
 const partner_repository = require('../partner/partner_repository');
 const interaction_repository = require('../interaction/interaction_repository');
@@ -14,6 +16,7 @@ const db_util = require('../utils/db');
 const mapper_util = require('../utils/mapper');
 const constants = require('../utils/constants');
 const config = require('../config');
+const logger = require('../logger');
 
 const S3_USER_PHOTO_URL = (user, filename) =>
 `https://s3.${config.get('s3.users_bucket.region')}.amazonaws.com/${config.get('s3.users_bucket.name')}/${user.id}/${filename}`
@@ -118,6 +121,23 @@ exports.updateUser = function* (req, res) {
     yield user.save();
     res.json(mapper_util.mapUserOutput(user));
 };
+
+exports.updateUserRole = function* (req, res) {
+    if (user_helper.userAllowedRole(req.user, constants.USER_ROLES.SUPER_ADMIN)) {
+        const new_role = yield role_repository.findByName(req.params.role_name);
+        const user = yield user_repository.getUserIfExists(req.params.id);
+        const is_add = req.query.is_add || false;
+        if (is_add) {
+            user.roles.push(new_role._id);
+        } else {
+            user.roles = [new_role._id];
+        }
+        yield user_repository.save(user);
+        logger.warn("Role change for user ", user);
+        res.json({});
+    }
+    throw error_util.createError(400);
+}
 
 exports.updatePhoto = function* (req, res) {
     const user = yield user_repository.getUserIfExists(req.params.user_id);

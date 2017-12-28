@@ -58,6 +58,10 @@ app.put('/users/:id', accounts_controller.verifyAuthenticationMiddleWare, (req, 
     controller.mainControlller(user_controller.updateUser, req, res)
 );
 
+app.put('/users/roles/:id/:role_name', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
+    controller.mainControlller(user_controller.updateUserRole, req, res)
+);
+
 app.post('/users/:user_id/photo', 
     accounts_controller.verifyAuthenticationMiddleWare, 
     user_uploader.photo.single('photo'), 
