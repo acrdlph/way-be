@@ -13,6 +13,25 @@ exports.geoMatcher = function* geoMatcher(user, options) {
 }
 
 /**
+ * TODO test this
+ * Can optimize by tracking links between users in a graph db or otherwise
+ * @param {*} user 
+ * @param {*} options 
+ */
+exports.contactedMatcher = function* contactedMatcher(user, options) {
+    let contacted_users = [];
+    contacted_users = yield _(options.messages)
+        .flatMap(message => {
+            return [message.sender_id, message.receiver_id];
+        })
+        .filter(id => id != user.id)
+        .uniq()
+        .map(uniq_id => user_repository.getUserIfExists(uniq_id))
+        .value();
+    return contacted_users;
+}
+
+/**
  * can be cached
  * @param {*} user 
  * @param {*} options 
@@ -44,17 +63,18 @@ function mapGodUser(god_user) {
 
 exports.matchers = [
     exports.geoMatcher, 
+    exports.contactedMatcher,
     exports.godMatcher,
     exports.locationGodMatcher
 ]
 
-exports.matchUsersToUser = function* matchUsersToUser(given_user) {
+exports.matchUsersToUser = function* matchUsersToUser(given_user, options) {
     // concurrently retrieve matching waitlist users for the given user
     const matched_user_arrays = yield exports
                                         .matchers
-                                        .map(matcher => matcher(given_user, {}));
+                                        .map(matcher => matcher(given_user, options));
     return _(matched_user_arrays)
                 .flatMap()
-                .uniqBy('_id')
+                .uniqBy('id')
                 .value();
 }

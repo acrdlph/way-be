@@ -48,3 +48,18 @@ exports.findByReceiver = function* (user_id) {
     const messages = yield message_model.find({ receiver_id: user_id });
     return messages;
 }
+
+exports.findByReceiverOrSender = function* (user_id) {
+    const messages = yield message_model.find({
+        $or:
+        [
+            {
+                sender_id: user_id
+            },
+            {
+                receiver_id: user_id
+            }
+        ]
+    });
+    return messages;
+}

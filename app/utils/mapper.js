@@ -37,12 +37,20 @@ exports.mapMessageOutput = function mapMessageOutput(msg) {
     }
 }
 
+/**
+ * TODO test this
+ * @param {*} user 
+ * @param {*} buddy 
+ * @param {*} messages 
+ */
 exports.waitlistBuddy = function waitlistBuddy(user, buddy, messages) {
-    const filtered_messages = messages.filter(message => message.sender_id == buddy.id &&
+    const buddy_messages = messages.filter(message => message.sender_id == buddy.id ||
+        message.receiver_id == buddy.id);
+    const buddy_sent_messages = buddy_messages.filter(message => message.sender_id == buddy.id &&
         message.receiver_id == user.id);
-    const non_delivered_messages = filtered_messages.filter(message => message.delivered === false);
+    const non_delivered_messages = buddy_sent_messages.filter(message => message.delivered === false);
     // sort so that we can get the last contact time
-    filtered_messages.sort(message_util.messageDateSortComparator);
+    buddy_messages.sort(message_util.messageDateSortComparator);
     return {
         id: buddy.id,
         name: buddy.name,
@@ -53,9 +61,9 @@ exports.waitlistBuddy = function waitlistBuddy(user, buddy, messages) {
         photo: buddy.photo,
         god_user: buddy.god_user,
         time_left: exports.getMinTimeLeft(buddy, user),
-        count: filtered_messages.length,
+        count: buddy_sent_messages.length,
         non_delivered_count: non_delivered_messages.length,
-        last_contact: filtered_messages.length > 0 ? filtered_messages[0].created_at : null
+        last_contact: buddy_messages.length > 0 ? buddy_messages[0].created_at : null
     }
 }
 

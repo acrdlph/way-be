@@ -28,8 +28,8 @@ const S3_USER_PHOTO_URL = (user, filename) =>
  */
 exports.usersByUser = function* (req, res) {
     const given_user = yield user_repository.getUserIfExists(req.params.user_id);
-    const matched_users = yield user_matchers.matchUsersToUser(given_user);
-    const messages = yield message_repository.findByReceiver(given_user.id);
+    const messages = yield message_repository.findByReceiverOrSender(given_user.id);
+    const matched_users = yield user_matchers.matchUsersToUser(given_user, { messages: messages });
     const users = matched_users
         .map(user => mapper_util.waitlistBuddy(given_user, user, messages))
         .filter(
