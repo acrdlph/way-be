@@ -69,8 +69,7 @@ exports.getUserDetails = function* (req, res) {
             created_at: interaction_date
         });
         yield interaction_repository.save(interaction);
-        user.interaction_url = config.get('server.domain_name') + '/' + interaction.initiator + '/' +
-            interaction.confirmation_code
+        user.interaction_url = config.get('server.domain_name') + '/#/confirm-interaction/' + interaction.confirmation_code;
     }
     res.json(mapper_util.mapUserOutput(user));
 }
@@ -106,11 +105,11 @@ exports.saveUser = function* (req, res) {
 exports.updateUser = function* (req, res) {
     const user = yield user_repository.getUserIfExists(req.params.id);
     user.location = req.body.location || user.location;
-    
-    user.geolocation = req.body.geolocation ? 
+
+    user.geolocation = req.body.geolocation ?
         db_util.constructPoint(
-            parseFloat(req.body.geolocation.longitude), 
-            parseFloat(req.body.geolocation.latitude)) 
+            parseFloat(req.body.geolocation.longitude),
+            parseFloat(req.body.geolocation.latitude))
             : user.geolocation;
     if (req.query.waiting_started === 'true') {
         user.waiting_started_at = datetime_util.serverCurrentDate();
