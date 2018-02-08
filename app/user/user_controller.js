@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
+const uuidv4 = require('uuid/v4');
 
 const interaction_model = require('../interaction/interaction_model');
 const user_repository = require('./user_repository');
@@ -60,13 +61,11 @@ exports.getUserDetails = function* (req, res) {
     }
 
     if (req.query.generate_url) {
-        const interaction_date = datetime_util.serverCurrentDate();
         const interaction = new interaction_model({
-            initiator: user.username, // username
             initiator_id: user.id,
-            confirmation_code: interaction_date.getTime(), // timestamp
-            geolocation: user.geolocation,
-            created_at: interaction_date
+            confirmor_id: null,
+            confirmation_code: uuidv4(),
+            created_at: datetime_util.serverCurrentDate()
         });
         yield interaction_repository.save(interaction);
         user.interaction_url = config.get('server.domain_name') + '/#/confirm-interaction/' + interaction.confirmation_code;
