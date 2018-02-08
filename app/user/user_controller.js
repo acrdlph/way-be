@@ -60,11 +60,15 @@ exports.getUserDetails = function* (req, res) {
       }
     }
 
+    const interactionCount = yield interaction_repository.findInteractionCountByUserId(user.id);
+    user.waytcoins = interactionCount || 0;
+
     if (req.query.generate_url) {
+        const confirmationCode = uuidv4().replace(/-/g, '');
         const interaction = new interaction_model({
             initiator_id: user.id,
             confirmor_id: null,
-            confirmation_code: uuidv4(),
+            confirmation_code: confirmationCode,
             created_at: datetime_util.serverCurrentDate()
         });
         yield interaction_repository.save(interaction);

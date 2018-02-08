@@ -10,7 +10,32 @@ exports.save = function* save(interaction) {
     return result;
 }
 
-exports.findByConfirmationCode = function* find(confirmation_code) {
-    const result = yield interaction_model.find({ confirmation_code: confirmation_code });
+exports.findByConfirmationCode = function* find(confirmationCode) {
+    const result = yield interaction_model.find({ confirmation_code: confirmationCode });
     return result;
+}
+
+exports.findInteractionCountByUserId = function* find(userId) {
+  const interactionCount = yield interaction_model.count(
+      {
+          $and: [
+              {
+                  $or:[
+                      {
+                          initiator_id: userId
+                      },
+                      {
+                          confirmor_id: userId
+                      }
+                  ]
+              },
+              {
+                confirmed_on: {
+                    $exists: true
+                }
+              }
+          ]
+      }
+  );
+  return interactionCount;
 }
