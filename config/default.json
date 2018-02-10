@@ -14,7 +14,7 @@
         }
     },
     "server": {
-        "domain_name": "localhost:3000",
+        "domain_name": "app.waitlist.cc",
         "private_key": "waitlistprivatekey"
     }
 }
