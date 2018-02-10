@@ -23,7 +23,7 @@ exports.confirmInteraction = function* confirmInteraction(req, res) {
       console.log(interaction);
 
       if (confirmorId === interaction.initiator_id) {
-          //throw error_util.createError(400, "initiator and confirmor have to be different persons");
+          throw error_util.createError(400, "initiator and confirmor have to be different persons");
       }
 
       if(interaction.confirmed_on) {
