@@ -29,7 +29,7 @@ const app = express();
 app.use((req, res, next) => {
     // specifying Access-Control-Allow-Origin=* this way since
     // socket.io sends credentials=init
-    res.header("Access-Control-Allow-Origin", req.header('origin') 
+    res.header("Access-Control-Allow-Origin", req.header('origin')
     || req.header('x-forwarded-host') || req.header('referer') || req.header('host'));
     res.header("Access-Control-Allow-Credentials", true);
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -42,7 +42,7 @@ app.use(passport.initialize());
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.get('/users/:user_id/details', accounts_controller.verifyAuthenticationMiddleWare, (req, res) => 
+app.get('/users/:user_id/details', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
     controller.mainControlller(user_controller.getUserDetails, req, res)
 );
 
@@ -62,9 +62,9 @@ app.put('/users/roles/:id/:role_name', accounts_controller.verifyAuthenticationM
     controller.mainControlller(user_controller.updateUserRole, req, res)
 );
 
-app.post('/users/:user_id/photo', 
-    accounts_controller.verifyAuthenticationMiddleWare, 
-    user_uploader.photo.single('photo'), 
+app.post('/users/:user_id/photo',
+    accounts_controller.verifyAuthenticationMiddleWare,
+    user_uploader.photo.single('photo'),
     (req, res) =>
         controller.mainControlller(user_controller.updatePhoto, req, res)
 );
@@ -77,8 +77,8 @@ app.get('/partners/search', (req, res) =>
     controller.mainControlller(partner_controller.savePartnersForGeoQuery, req, res)
 );
 
-app.post('/partners', 
-    accounts_controller.verifyAuthenticationMiddleWare, 
+app.post('/partners',
+    accounts_controller.verifyAuthenticationMiddleWare,
     (req, res) =>
         controller.mainControlller(partner_controller.savePartner, req, res)
 );
@@ -95,7 +95,7 @@ app.post('/accounts', (req, res) =>
     controller.mainControlller(accounts_controller.signUp, req, res)
 );
 
-app.post('/accounts/login', passport.authenticate('local'), (req, res) => 
+app.post('/accounts/login', passport.authenticate('local'), (req, res) =>
     controller.mainControlller(accounts_controller.login, req, res)
 );
 
@@ -109,8 +109,8 @@ app.post('/feedback', (req, res) =>
 
 // this is initiated by the FE after the new user creates a profile through a link or
 // existing user scans a QR code through the app
-app.post('/interactions/:username/:confirmation_code', (req, res) =>
-    controller.mainControlller(interactions_controller.verifyInteraction, req, res)
+app.post('/interactions/:confirmation_code', (req, res) =>
+    controller.mainControlller(interactions_controller.confirmInteraction, req, res)
 );
 
 const server = app.listen(3001, () => logger.info('Waitlist API listening on port 3001!'));
@@ -134,9 +134,7 @@ io.use((socket, next) => co(function* () {
     }).catch(err => logger.error(err))
 )
 io.of('/messaging')
-.on('connection', (socket) => 
+.on('connection', (socket) =>
     co(message_controller.initSocketConnection(socket))
     .catch(err => logger.error(err))
 );
-
-    

@@ -14,12 +14,17 @@ let users;
 describe('User Controller', () => {
 
     before(function* () {
-        mock_require('../../../app/user/user_repository', { 
+        mock_require('../../../app/user/user_repository', {
             getUserForUsername: function* (user_id) {
                 return {
                     id: user_id,
                     name: 'test_user'
                 };
+            }
+        });
+        mock_require('../../../app/interaction/interaction_repository', {
+            findInteractionCountByUserId: function* (user_id) {
+                return 1;
             }
         });
         users = mock_require.reRequire('../../../app/user/user_controller');
@@ -29,7 +34,7 @@ describe('User Controller', () => {
         mock_require.stopAll();
     });
 
-    describe('#getUserDetails', () => {        
+    describe('#getUserDetails', () => {
         it('should send user json correctly', function* () {
             const req = {
                 params: {
@@ -47,7 +52,7 @@ describe('User Controller', () => {
             } catch(err) {
                 test_helper.fail();
             }
-            
+
             expect(res.json).to.be.calledWith({
                 created_at: undefined,
                 default_name: undefined,
@@ -62,7 +67,8 @@ describe('User Controller', () => {
                 token: undefined,
                 username: undefined,
                 waiting_started_at: undefined,
-                waiting_time: undefined
+                waiting_time: undefined,
+                waytcoins: 1
             });
         });
     });

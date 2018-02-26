@@ -15,6 +15,6 @@
     },
     "server": {
         "domain_name": "app.waitlist.cc",
-        "private_key": "waitlistprivatekey" 
-    } 
+        "private_key": "waitlistprivatekey"
+    }
 }
