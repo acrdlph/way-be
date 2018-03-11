@@ -112,11 +112,11 @@ exports.createNewUser = function* createNewUser(name, waiting_time, location, ge
  * 
  * @param {*} geolocation 
  */
-exports.nearByUsers = function* nearByUsers(geolocation) {
+exports.nearByUsers = function* nearByUsers(geolocation, maxDistance= constants.USER_NEAR_BY_DISTANCE) {
     const geo_near_users = yield user_model.find()
             .where('geolocation').near({
                 center: geolocation,
-                maxDistance: constants.USER_NEAR_BY_DISTANCE
+                maxDistance: maxDistance
             })
             .populate('roles')
             .exec();

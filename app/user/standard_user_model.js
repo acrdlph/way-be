@@ -3,10 +3,11 @@ const Schema = mongoose.Schema;
 
 module.exports = {
     name: String,
+    address: String,
     username: String,
     password: String,
     email: String,
-    default_name: String, 
+    default_name: String,
     waiting_time: Number, // minutes
     waiting_started_at: Date,
     interests: String,

@@ -20,7 +20,7 @@ const config = require('../config');
 const logger = require('../logger');
 
 const S3_USER_PHOTO_URL = (user, filename) =>
-`https://s3.${config.get('s3.users_bucket.region')}.amazonaws.com/${config.get('s3.users_bucket.name')}/${user.id}/${filename}`
+    `https://s3.${config.get('s3.users_bucket.region')}.amazonaws.com/${config.get('s3.users_bucket.name')}/${user.id}/${filename}`
 
 /**
  * get users from the perspective of a given user
@@ -30,16 +30,19 @@ const S3_USER_PHOTO_URL = (user, filename) =>
 exports.usersByUser = function* (req, res) {
     const given_user = yield user_repository.getUserIfExists(req.params.user_id);
     const messages = yield message_repository.findByReceiverOrSender(given_user.id);
-    const matched_users = yield user_matchers.matchUsersToUser(given_user, { messages: messages });
+    const distance = req.query['distance'] || constants.USER_NEAR_BY_DISTANCE;
+    const matched_users = yield user_matchers.geoMatcher(given_user, { messages: messages, distance: distance });
     const users = matched_users
         .map(user => mapper_util.waitlistBuddy(given_user, user, messages))
         .filter(
             user => (
-                user.time_left > 0 ||
-                user.count > 0 ||
-                user.god_user
+                true
+                // mapper_util.getUserLocation(given_user.location, user.location)
+                // user.time_left > 0 ||
+                // user.count > 0 ||
+                // user.god_user
             ) &&
-            user.id != given_user.id);
+                user.id != given_user.id);
     res.json(users);
 };
 
@@ -53,11 +56,11 @@ exports.getUserDetails = function* (req, res) {
     if (!user) {
         user = yield user_repository.getUserIfExists(req.params.user_id);
     }
-    if(user.geolocation) {
-      const partners_nearby = yield partner_repository.nearBy(user.geolocation);
-      if (partners_nearby.length) {
-          user.location = partners_nearby[0].location;
-      }
+    if (user.geolocation) {
+        const partners_nearby = yield partner_repository.nearBy(user.geolocation);
+        if (partners_nearby.length) {
+            user.location = partners_nearby[0].location;
+        }
     }
 
     const interactionCount = yield interaction_repository.findInteractionCountByUserId(user.id);
@@ -113,13 +116,15 @@ exports.updateUser = function* (req, res) {
         db_util.constructPoint(
             parseFloat(req.body.geolocation.longitude),
             parseFloat(req.body.geolocation.latitude))
-            : user.geolocation;
+        : user.geolocation;
     if (req.query.waiting_started === 'true') {
         user.waiting_started_at = datetime_util.serverCurrentDate();
     }
     user.waiting_time = req.body.waiting_time || user.waiting_time;
     user.name = req.body.name || user.name;
     user.interests = req.body.interests || user.interests;
+    user.address = req.body.address
+
     yield user.save();
     res.json(mapper_util.mapUserOutput(user));
 };

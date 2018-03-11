@@ -7,7 +7,7 @@ const constants = require('../utils/constants');
 exports.geoMatcher = function* geoMatcher(user, options) {
     let geo_near_users = [];
     if (user.geolocation) {
-        geo_near_users = yield user_repository.nearByUsers(user.geolocation);
+        geo_near_users = yield user_repository.nearByUsers(user.geolocation, options.distance);
     }
     return geo_near_users;
 }

@@ -13,6 +13,7 @@ exports.mapUserOutput = function mapUserOutput(user, token) {
         waiting_time: user.waiting_time,
         waiting_started_at: user.waiting_started_at,
         location: user.location,
+        address: user.address,
         photo: user.photo,
         geolocation: {
             longitude: _.get(user, 'geolocation.coordinates.0'),
@@ -58,6 +59,7 @@ exports.waitlistBuddy = function waitlistBuddy(user, buddy, messages) {
         username: buddy.username,
         default_name: buddy.default_name,
         interests: buddy.interests,
+        address: buddy.address,
         location: buddy.location,
         photo: buddy.photo,
         god_user: buddy.god_user,
@@ -78,4 +80,8 @@ exports.getTimeLeft = function getTimeLeft(user) {
     const waiting_started_at = user.waiting_started_at || user.created_at;
     return moment(waiting_started_at).add(user.waiting_time, 'm')
         .diff(datetime_util.serverCurrentDate(), 'minutes');
+}
+
+exports.getUserLocation = function getUserLocation(current_location, location) {
+    console.log(location.geolocation)   
 }
