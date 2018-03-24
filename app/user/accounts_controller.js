@@ -20,10 +20,10 @@ passport.use(new LocalStrategy({
     usernameField: 'loginname',
     passwordField: 'password',
     session: false
-  }, (loginname, password, done) => {
-        co(passportLoginCallBack(loginname, password, done))
+}, (loginname, password, done) => {
+    co(passportLoginCallBack(loginname, password, done))
         .catch(err => {
-            done(err); 
+            done(err);
         });
 }));
 
@@ -31,12 +31,12 @@ passport.use(new LocalStrategy({
 passport.serializeUser(function(user, done) {
     done(null, user.id);
 });
-  
+
 passport.deserializeUser(function(id, done) {
     done(null, id);
 });
 
-exports.checkUsername = function* (req, res) {
+exports.checkUsername = function*(req, res) {
     const username = req.params.username;
     const user = yield user_repository.getUserForUsername(username);
     if (user) {
@@ -46,7 +46,7 @@ exports.checkUsername = function* (req, res) {
     }
 }
 
-exports.signUp = function* (req, res) {
+exports.signUp = function*(req, res) {
     const user_id = req.body.user_id || "";
     const username = req.body.username;
     const email = req.body.email;
@@ -66,7 +66,7 @@ exports.signUp = function* (req, res) {
     if (user_id) {
         user = yield user_repository.getUserIfExists(user_id);
     }
-    
+
     if (user) {
         const user_role = yield role_repository.findByName(constants.USER_ROLES.USER.name);
         const signed_up = datetime_util.serverCurrentDate();
@@ -83,11 +83,11 @@ exports.signUp = function* (req, res) {
     res.json(mapper_util.mapUserOutput(user, token));
 }
 
-exports.login = function* (req, res) {
+exports.login = function*(req, res) {
     if (req.user) {
         const token = auth_util.jwtSign(req.user.id, config.get('server.private_key'), constants.TWENTY_FOUR_HOURS);
         const user_output = mapper_util.mapUserOutput(req.user, token);
-        res.json({ 
+        res.json({
             ...user_output,
             auth: true
         });
@@ -96,17 +96,16 @@ exports.login = function* (req, res) {
     }
 }
 
-exports.logout = function* (req, res) {
-    res.json({ 
-        auth: false, 
-        token: null 
+exports.logout = function*(req, res) {
+    res.json({
+        auth: false,
+        token: null
     });
 }
 
 function* passportLoginCallBack(loginname, password, done) {
     const users = yield user_repository.find({
-        $or: [
-            {
+        $or: [{
                 username: loginname
             },
             {
@@ -133,7 +132,7 @@ function* passportLoginCallBack(loginname, password, done) {
  * @param {*} res 
  * @param {*} next 
  */
-exports.verifyAuthenticationMiddleWare = (req, res, next) => 
+exports.verifyAuthenticationMiddleWare = (req, res, next) =>
     co(verifyAuthentication(req, res, next))
     .catch(err => error_util.handleError(req, res, err, { auth: false }));
 

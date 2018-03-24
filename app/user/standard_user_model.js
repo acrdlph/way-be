@@ -4,7 +4,10 @@ const Schema = mongoose.Schema;
 module.exports = {
     name: String,
     address: String,
+    endorsement: Number,
+    balance: Number,
     username: String,
+    transactions: [],
     password: String,
     email: String,
     default_name: String,

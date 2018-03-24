@@ -27,7 +27,7 @@ const S3_USER_PHOTO_URL = (user, filename) =>
  * @param {*} req
  * @param {*} res
  */
-exports.usersByUser = function* (req, res) {
+exports.usersByUser = function*(req, res) {
     const given_user = yield user_repository.getUserIfExists(req.params.user_id);
     const messages = yield message_repository.findByReceiverOrSender(given_user.id);
     const distance = req.query['distance'] || constants.USER_NEAR_BY_DISTANCE;
@@ -42,7 +42,7 @@ exports.usersByUser = function* (req, res) {
                 // user.count > 0 ||
                 // user.god_user
             ) &&
-                user.id != given_user.id);
+            user.id != given_user.id)
     res.json(users);
 };
 
@@ -51,7 +51,7 @@ exports.usersByUser = function* (req, res) {
  * @param {*} req
  * @param {*} res
  */
-exports.getUserDetails = function* (req, res) {
+exports.getUserDetails = function*(req, res) {
     let user = yield user_repository.getUserForUsername(req.params.user_id);
     if (!user) {
         user = yield user_repository.getUserIfExists(req.params.user_id);
@@ -85,7 +85,7 @@ exports.getUserDetails = function* (req, res) {
  * @param {*} req
  * @param {*} res
  */
-exports.saveUser = function* (req, res) {
+exports.saveUser = function*(req, res) {
     let location = req.body.location;
     let geolocation = req.body.geolocation;
     const name = req.body.name;
@@ -108,15 +108,15 @@ exports.saveUser = function* (req, res) {
  * @param {*} req
  * @param {*} res
  */
-exports.updateUser = function* (req, res) {
+exports.updateUser = function*(req, res) {
     const user = yield user_repository.getUserIfExists(req.params.id);
     user.location = req.body.location || user.location;
 
     user.geolocation = req.body.geolocation ?
         db_util.constructPoint(
             parseFloat(req.body.geolocation.longitude),
-            parseFloat(req.body.geolocation.latitude))
-        : user.geolocation;
+            parseFloat(req.body.geolocation.latitude)) :
+        user.geolocation;
     if (req.query.waiting_started === 'true') {
         user.waiting_started_at = datetime_util.serverCurrentDate();
     }
@@ -129,7 +129,7 @@ exports.updateUser = function* (req, res) {
     res.json(mapper_util.mapUserOutput(user));
 };
 
-exports.updateUserRole = function* (req, res) {
+exports.updateUserRole = function*(req, res) {
     if (user_helper.userAllowedRole(req.user, constants.USER_ROLES.SUPER_ADMIN)) {
         const new_role = yield role_repository.findByName(req.params.role_name);
         const user = yield user_repository.getUserIfExists(req.params.id);
@@ -146,7 +146,7 @@ exports.updateUserRole = function* (req, res) {
     throw error_util.createError(400);
 }
 
-exports.updatePhoto = function* (req, res) {
+exports.updatePhoto = function*(req, res) {
     const user = yield user_repository.getUserIfExists(req.params.user_id);
     user.photo = S3_USER_PHOTO_URL(user, req.file.standard_name);
     yield user.save();

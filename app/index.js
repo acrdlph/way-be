@@ -21,6 +21,7 @@ const user_uploader = require('./user/user_upload');
 const mongo_user_string = config.get('database.user') ? `${config.get('database.user')}:${config.get('database.password')}@` : '';
 const mongo_db = `mongodb://${mongo_user_string}${config.get('database.host')}:${config.get('database.port')}/${config.get('database.name')}`;
 db.init_mongoose(mongo_db);
+console.log(mongo_user_string, mongo_db);
 
 migration.runMigrations();
 
@@ -29,8 +30,8 @@ const app = express();
 app.use((req, res, next) => {
     // specifying Access-Control-Allow-Origin=* this way since
     // socket.io sends credentials=init
-    res.header("Access-Control-Allow-Origin", req.header('origin')
-    || req.header('x-forwarded-host') || req.header('referer') || req.header('host'));
+    res.header("Access-Control-Allow-Origin", req.header('origin') ||
+        req.header('x-forwarded-host') || req.header('referer') || req.header('host'));
     res.header("Access-Control-Allow-Credentials", true);
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     // logger.logRequest(req);
@@ -66,7 +67,7 @@ app.post('/users/:user_id/photo',
     accounts_controller.verifyAuthenticationMiddleWare,
     user_uploader.photo.single('photo'),
     (req, res) =>
-        controller.mainControlller(user_controller.updatePhoto, req, res)
+    controller.mainControlller(user_controller.updatePhoto, req, res)
 );
 
 app.get('/partners', (req, res) =>
@@ -80,7 +81,7 @@ app.get('/partners/search', (req, res) =>
 app.post('/partners',
     accounts_controller.verifyAuthenticationMiddleWare,
     (req, res) =>
-        controller.mainControlller(partner_controller.savePartner, req, res)
+    controller.mainControlller(partner_controller.savePartner, req, res)
 );
 
 app.post('/messages/receive', accounts_controller.verifyAuthenticationMiddleWare, (req, res) =>
@@ -121,20 +122,47 @@ const socketio_options = {
     pingInterval: 3000
 };
 const io = require('socket.io')(server, socketio_options)
-io.use((socket, next) => co(function* () {
-        // handle auth for sockets
-        const token = socket.handshake.query.token;
-        try {
-            yield auth.verifyJwt(token, config.get('server.private_key'));
-            return next();
-        } catch (err) {
-            logger.warn(err);
-            return next(new Error('authentication error'));
-        }
-    }).catch(err => logger.error(err))
-)
+io.use((socket, next) => co(function*() {
+    // handle auth for sockets
+    const token = socket.handshake.query.token;
+    try {
+        yield auth.verifyJwt(token, config.get('server.private_key'));
+        return next();
+    } catch (err) {
+        logger.warn(err);
+        return next(new Error('authentication error'));
+    }
+}).catch(err => logger.error(err)))
 io.of('/messaging')
-.on('connection', (socket) =>
-    co(message_controller.initSocketConnection(socket))
-    .catch(err => logger.error(err))
-);
+    .on('connection', (socket) =>
+        co(message_controller.initSocketConnection(socket))
+        .catch(err => logger.error(err))
+    );
+
+const Web3 = require('web3');
+const abi = require('./smart_contract.json');
+
+if (typeof web3 !== 'undefined') {
+    web3 = new Web3(web3.currentProvider);
+} else {
+    // set the provider you want from Web3.providers
+    web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
+}
+const address = '0xb688539394be77128491d17905ad90407213aa32';
+const contract = web3.eth.contract(abi).at(address);
+const event = contract.allEvents({ fromBlock: 0, toBlock: 'latest' });
+const user_repository = require('./user/user_repository');
+
+event.watch((error, data) => {
+    const user_address = data.args.user_address;
+    const endorsement = data.args.endorsement;
+    const balance = data.args.balance;
+    const transaction = data.transactionHash;
+
+    co(user_repository.getUserByAddress(user_address))
+        .then((user) => {
+            user.endorsement = endorsement;
+            user.balance = balance;
+            user.save(() => console.log(`User ${user_address} saved, balance ${endorsement}`));
+        }).catch(err => logger.error(err))
+});

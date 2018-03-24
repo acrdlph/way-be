@@ -60,6 +60,8 @@ exports.waitlistBuddy = function waitlistBuddy(user, buddy, messages) {
         default_name: buddy.default_name,
         interests: buddy.interests,
         address: buddy.address,
+        endorsement: buddy.endorsement,
+        balance: buddy.balance,
         location: buddy.location,
         photo: buddy.photo,
         god_user: buddy.god_user,
@@ -83,5 +85,5 @@ exports.getTimeLeft = function getTimeLeft(user) {
 }
 
 exports.getUserLocation = function getUserLocation(current_location, location) {
-    console.log(location.geolocation)   
+    console.log(location.geolocation)
 }
