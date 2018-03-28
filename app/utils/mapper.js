@@ -39,6 +39,11 @@ exports.mapMessageOutput = function mapMessageOutput(msg) {
     }
 }
 
+
+const reducer = (a, b ) => {
+    return a + b.endorsement
+}
+
 /**
  * TODO test this
  * @param {*} user
@@ -60,8 +65,7 @@ exports.waitlistBuddy = function waitlistBuddy(user, buddy, messages) {
         default_name: buddy.default_name,
         interests: buddy.interests,
         address: buddy.address,
-        endorsement: buddy.endorsement,
-        balance: buddy.balance,
+        endorsement: buddy.transactions.reduce(reducer, 0),
         location: buddy.location,
         photo: buddy.photo,
         god_user: buddy.god_user,

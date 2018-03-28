@@ -1,6 +1,8 @@
-[{
+[
+    {
         "anonymous": false,
-        "inputs": [{
+        "inputs": [
+            {
                 "indexed": true,
                 "name": "src",
                 "type": "address"
@@ -21,7 +23,8 @@
     },
     {
         "constant": false,
-        "inputs": [{
+        "inputs": [
+            {
                 "name": "_spender",
                 "type": "address"
             },
@@ -31,20 +34,24 @@
             }
         ],
         "name": "approve",
-        "outputs": [{
-            "name": "success",
-            "type": "bool"
-        }],
+        "outputs": [
+            {
+                "name": "success",
+                "type": "bool"
+            }
+        ],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "constant": false,
-        "inputs": [{
-            "name": "user",
-            "type": "address"
-        }],
+        "inputs": [
+            {
+                "name": "user",
+                "type": "address"
+            }
+        ],
         "name": "createUser",
         "outputs": [],
         "payable": false,
@@ -53,10 +60,12 @@
     },
     {
         "constant": false,
-        "inputs": [{
-            "name": "endorsee",
-            "type": "address"
-        }],
+        "inputs": [
+            {
+                "name": "endorsee",
+                "type": "address"
+            }
+        ],
         "name": "endorse",
         "outputs": [],
         "payable": false,
@@ -65,17 +74,20 @@
     },
     {
         "anonymous": false,
-        "inputs": [{
-            "indexed": false,
-            "name": "TotalVoteCount",
-            "type": "uint256"
-        }],
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "TotalVoteCount",
+                "type": "uint256"
+            }
+        ],
         "name": "TotalVoteCount",
         "type": "event"
     },
     {
         "anonymous": false,
-        "inputs": [{
+        "inputs": [
+            {
                 "indexed": false,
                 "name": "user_address",
                 "type": "address"
@@ -96,7 +108,8 @@
     },
     {
         "constant": false,
-        "inputs": [{
+        "inputs": [
+            {
                 "name": "toMint",
                 "type": "uint256"
             },
@@ -113,7 +126,8 @@
     },
     {
         "anonymous": false,
-        "inputs": [{
+        "inputs": [
+            {
                 "indexed": true,
                 "name": "src",
                 "type": "address"
@@ -134,17 +148,20 @@
     },
     {
         "anonymous": false,
-        "inputs": [{
-            "indexed": false,
-            "name": "money",
-            "type": "uint256"
-        }],
+        "inputs": [
+            {
+                "indexed": false,
+                "name": "money",
+                "type": "uint256"
+            }
+        ],
         "name": "MoneyToPay",
         "type": "event"
     },
     {
         "constant": false,
-        "inputs": [{
+        "inputs": [
+            {
                 "name": "_to",
                 "type": "address"
             },
@@ -154,17 +171,20 @@
             }
         ],
         "name": "transfer",
-        "outputs": [{
-            "name": "success",
-            "type": "bool"
-        }],
+        "outputs": [
+            {
+                "name": "success",
+                "type": "bool"
+            }
+        ],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "constant": false,
-        "inputs": [{
+        "inputs": [
+            {
                 "name": "_from",
                 "type": "address"
             },
@@ -178,16 +198,19 @@
             }
         ],
         "name": "transferFrom",
-        "outputs": [{
-            "name": "success",
-            "type": "bool"
-        }],
+        "outputs": [
+            {
+                "name": "success",
+                "type": "bool"
+            }
+        ],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
-        "inputs": [{
+        "inputs": [
+            {
                 "name": "_name",
                 "type": "string"
             },
@@ -202,7 +225,8 @@
     },
     {
         "constant": true,
-        "inputs": [{
+        "inputs": [
+            {
                 "name": "_owner",
                 "type": "address"
             },
@@ -212,25 +236,31 @@
             }
         ],
         "name": "allowance",
-        "outputs": [{
-            "name": "remaining",
-            "type": "uint256"
-        }],
+        "outputs": [
+            {
+                "name": "remaining",
+                "type": "uint256"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
     },
     {
         "constant": true,
-        "inputs": [{
-            "name": "_addr",
-            "type": "address"
-        }],
+        "inputs": [
+            {
+                "name": "_addr",
+                "type": "address"
+            }
+        ],
         "name": "balanceOf",
-        "outputs": [{
-            "name": "balance",
-            "type": "uint256"
-        }],
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "uint256"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
@@ -239,10 +269,12 @@
         "constant": true,
         "inputs": [],
         "name": "decimals",
-        "outputs": [{
-            "name": "",
-            "type": "uint8"
-        }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint8"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
@@ -251,10 +283,12 @@
         "constant": true,
         "inputs": [],
         "name": "getUsersLength",
-        "outputs": [{
-            "name": "",
-            "type": "uint256"
-        }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
@@ -263,10 +297,12 @@
         "constant": true,
         "inputs": [],
         "name": "name",
-        "outputs": [{
-            "name": "",
-            "type": "string"
-        }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
@@ -275,10 +311,12 @@
         "constant": true,
         "inputs": [],
         "name": "owner",
-        "outputs": [{
-            "name": "",
-            "type": "address"
-        }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
@@ -287,10 +325,12 @@
         "constant": true,
         "inputs": [],
         "name": "periodEnd",
-        "outputs": [{
-            "name": "",
-            "type": "uint256"
-        }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
@@ -299,10 +339,12 @@
         "constant": true,
         "inputs": [],
         "name": "symbol",
-        "outputs": [{
-            "name": "",
-            "type": "string"
-        }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
@@ -311,10 +353,12 @@
         "constant": true,
         "inputs": [],
         "name": "tokenname",
-        "outputs": [{
-            "name": "",
-            "type": "string"
-        }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
@@ -323,10 +367,12 @@
         "constant": true,
         "inputs": [],
         "name": "totalSupply",
-        "outputs": [{
-            "name": "_totalSupply",
-            "type": "uint256"
-        }],
+        "outputs": [
+            {
+                "name": "_totalSupply",
+                "type": "uint256"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
@@ -335,22 +381,27 @@
         "constant": true,
         "inputs": [],
         "name": "totalVoteInPeriod",
-        "outputs": [{
-            "name": "",
-            "type": "uint256"
-        }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
         "payable": false,
         "stateMutability": "view",
         "type": "function"
     },
     {
         "constant": true,
-        "inputs": [{
-            "name": "",
-            "type": "uint256"
-        }],
+        "inputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
         "name": "users",
-        "outputs": [{
+        "outputs": [
+            {
                 "name": "endorsement",
                 "type": "uint256"
             },
@@ -365,12 +416,15 @@
     },
     {
         "constant": true,
-        "inputs": [{
-            "name": "",
-            "type": "address"
-        }],
+        "inputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ],
         "name": "voters",
-        "outputs": [{
+        "outputs": [
+            {
                 "name": "endorsement",
                 "type": "uint256"
             },
