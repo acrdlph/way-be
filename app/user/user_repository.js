@@ -127,7 +127,7 @@ exports.nearByUsers = function* nearByUsers(geolocation, maxDistance = constants
         .where('geolocation').near({
             center: geolocation,
             maxDistance: maxDistance
-        }).sort({ endorsement: -1 }).limit(50)
+        }).sort({ endorsement: 1 }).limit(50)
         .populate('roles')
         .exec();
     return geo_near_users;

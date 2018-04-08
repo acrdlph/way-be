@@ -152,6 +152,12 @@ const address = '0x0ab528157f9a3859ddc54dfac618041b05fdaef0'
 const contract = web3.eth.contract(abi).at(address)
 const event = contract.allEvents({fromBlock: 0, toBlock: 'latest'})
 const user_repository = require('./user/user_repository')
+if(!web3.isConnected()) {
+  console.log("********\n\n\n\n\n\n")
+  console.log("Please run blockchain node, fucker!!");
+  console.log("\n\n\n\n\n\n********")
+  process.exit();
+}
 
 event.watch((error, data) => {
   if (!data.args) {
