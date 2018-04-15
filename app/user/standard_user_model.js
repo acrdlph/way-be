@@ -5,6 +5,7 @@ module.exports = {
     name: String,
     address: String,
     username: String,
+    transactions: [{ id: String, endorsement: Number, balance: Number}],
     password: String,
     email: String,
     default_name: String,
