@@ -156,9 +156,7 @@ if(!web3.isConnected()) {
   console.log("********\n\n\n\n\n\n")
   console.log("Please run blockchain node, fucker!!");
   console.log("\n\n\n\n\n\n********")
-  process.exit();
-}
-
+} else {
 event.watch((error, data) => {
   if (!data.args) {
     return;
@@ -182,3 +180,5 @@ event.watch((error, data) => {
       user.save(() => console.log(`tx ${transaction.id}: User ${user_address} saved, endorsement ${endorsement}, balance ${endorsement}`))
     }).catch(err => logger.error('._.'))
 })
+}
+
