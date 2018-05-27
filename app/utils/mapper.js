@@ -41,7 +41,7 @@ exports.mapMessageOutput = function mapMessageOutput(msg) {
 
 
 const reducer = (a, b ) => {
-    return a + b.endorsement
+    return a + b.balance
 }
 
 /**

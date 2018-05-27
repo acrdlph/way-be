@@ -165,12 +165,12 @@ event.watch((error, data) => {
   }
 
   const user_address = data.args.user_address
-  const endorsement = data.args.endorsement
-  const balance = data.args.balance
+  const endorsement = parseInt(data.args.endorsement / (10 ** 18))
+  const balance = parseInt(data.args.balance / (10 ** 18))
 
   const transaction = {id: `${data.transactionHash}`,
-    endorsement: parseInt(balance),
-    balance: parseInt(balance)
+    endorsement: endorsement,
+    balance: balance
   }
   co(user_repository.getUserByAddress(user_address))
     .then((user) => {
