@@ -3,6 +3,10 @@ const moment = require('moment');
 const message_util = require('./message');
 const datetime_util = require('./datetime');
 
+const reducer = (a, b ) => {
+    return a + b.balance
+}
+
 exports.mapUserOutput = function mapUserOutput(user, token) {
     return {
         id: user.id,
@@ -23,7 +27,8 @@ exports.mapUserOutput = function mapUserOutput(user, token) {
         interaction_url: user.interaction_url,
         created_at: user.created_at,
         token: token,
-        waytcoins: user.waytcoins
+        waytcoins: user.waytcoins,
+        endorsement: user.transactions.reduce(reducer, 0)
     }
 }
 
@@ -39,10 +44,6 @@ exports.mapMessageOutput = function mapMessageOutput(msg) {
     }
 }
 
-
-const reducer = (a, b ) => {
-    return a + b.balance
-}
 
 /**
  * TODO test this
