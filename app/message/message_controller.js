@@ -8,12 +8,14 @@ const error_util = require('../utils/error');
 const datetime_util = require('../utils/datetime');
 const mapper_util = require('../utils/mapper');
 const logger = require('../logger');
+const sendEmail = require('../utils/sendEmail');
 
 /**
  * This is an index for all sockets currently handled by the server
  * indexed by user_id, socket_id combination
  */
 const ws_connections = {};
+var sentFlag = false;
 
 const SOCKET_EVENTS = {
     NEW_MESSAGE: 'NEW_MESSAGE',
@@ -37,7 +39,7 @@ exports.receiveMessagesByBuddyForLoggedInUser = function* (req, res) {
     res.json(delivered_messages);
 }
 
-/**
+    /**
  * socket.io connection initialization
  * 
  * RANT: How to handle multi server chat
@@ -70,13 +72,13 @@ exports.initSocketConnection = function* (socket) {
 
     socket.on('disconnect', function (reason) {
         logger.debug('user ' + user_id + ' disconnected because of ' + reason);
-        delete ws_connections[user_id][socket.id];
+        delete ws_connections[user_id];
     });
 }
 
 /**
  * exported for testing
- * @param {*} msg 
+ * @param {*} msg
  */
 exports.handleNewMessage = function* handleNewMessage(msg) {
     msg.created_at = datetime_util.serverCurrentDate();
@@ -89,8 +91,14 @@ exports.handleNewMessage = function* handleNewMessage(msg) {
     // send to the destination
     if (new_message.receiver_id in ws_connections) {
         exports.sendMessage(new_message.receiver_id, new_message);
+        sentFlag = false;
     } else {
         logger.warn('receiver not connected', new_message.receiver_id);
+        if (sentFlag === false) {
+            const sendTo = yield user_repository.getUserIfExists(new_message.receiver_id);
+            sendEmail(sendTo.email);
+        }
+        sentFlag = true;
     }
 
     // sending back to sender to confirm 
