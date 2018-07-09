@@ -17,6 +17,7 @@ const sendEmail = require('../utils/sendEmail');
 const ws_connections = {};
 var sentFlag = false;
 const sentTo = [];
+const sentFrom = [];
 
 const SOCKET_EVENTS = {
     NEW_MESSAGE: 'NEW_MESSAGE',
@@ -88,19 +89,26 @@ exports.handleNewMessage = function* handleNewMessage(msg) {
     // save to generate db ID
     yield message_repository.save(new_message);
     logger.debug("Message received ", new_message);
+    console.log('new ', new_message);
     if (!sentTo.includes(new_message.receiver_id)) {
         sentTo.push(new_message.receiver_id);
+        sentFlag = false;
+    }
+    if (!sentFrom.includes(new_message.sender_id)) {
+        sentFrom.push(new_message.sender_id);
         sentFlag = false;
     }
     // send to the destination
     if (new_message.receiver_id in ws_connections) {
         exports.sendMessage(new_message.receiver_id, new_message);
         sentFlag = false;
+        console.log(ws_connections);
     } else {
         logger.warn('receiver not connected', new_message.receiver_id);
         if (sentFlag === false) {
             const sendTo = yield user_repository.getUserIfExists(new_message.receiver_id);
             sendEmail(sendTo.email);
+            console.log('sent yaw');
         }
         sentFlag = true;
     }
