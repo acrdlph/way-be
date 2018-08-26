@@ -146,7 +146,7 @@ if (typeof web3 !== 'undefined') {
   web3 = new Web3(web3.currentProvider)
 } else {
   // set the provider you want from Web3.providers
-  web3 = new Web3(new Web3.providers.HttpProvider('http://ec2-34-245-74-26.eu-west-1.compute.amazonaws.com:8545'))
+  web3 = new Web3(new Web3.providers.HttpProvider('http://34.245.74.26:8545'))
 }
 const address = '0xbaa593e9c1f11bbcfa4725085211d764eec26592'
 const contract = web3.eth.contract(abi).at(address)
