@@ -28,7 +28,6 @@ exports.deleteQuestion = function* deleteQuestion(id) {
     throw error_util.createError(400, "Invalid Question Id " + id);
   }
   yield question_model.findByIdAndRemove(id);
-  console.log(id);
 };
 
 exports.getQuestionIfExists = function* getQuestionIfExists(id) {

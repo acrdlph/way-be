@@ -48,7 +48,6 @@ exports.saveReply = function*(req, res) {
   };
   question.replies = question.replies.concat(reply);
   yield question_repository.save(question);
-  console.log(q_id, replied_by, "take it");
   const questions = yield question_repository.find({
     _id: q_id
   });
@@ -63,7 +62,6 @@ exports.deleteReply = function*(req, res) {
   question.replies = question.replies.filter(
     repl => repl._id.toString() !== repl_id
   );
-  console.log(question.replies);
 
   yield question_repository.save(question);
   res.json({});
