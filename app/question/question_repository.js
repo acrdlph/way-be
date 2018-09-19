@@ -8,11 +8,11 @@ exports.find = function* find(query) {
     .find(query)
     .populate(
       "asked_by",
-      "-_id -email -password -default_name -signed_up -created_at -__v -geolocation -location -interests -roles -transactions"
+      "-address -email -password -default_name -signed_up -created_at -__v -geolocation -location -interests -roles -transactions"
     )
     .populate(
       "replies.replied_by",
-      "-_id -email -password -default_name -signed_up -created_at -__v -geolocation -location -interests -roles -transactions"
+      "-address -email -password -default_name -signed_up -created_at -__v -geolocation -location -interests -roles -transactions"
     );
 
   return result;

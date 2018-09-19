@@ -64,7 +64,7 @@ exports.deleteReply = function*(req, res) {
   );
 
   yield question_repository.save(question);
-  res.json({});
+  res.json(question);
 };
 
 exports.upvoteQuestion = function*(req, res) {
