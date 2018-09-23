@@ -64,7 +64,10 @@ exports.deleteReply = function*(req, res) {
   );
 
   yield question_repository.save(question);
-  res.json(question);
+  const questions = yield question_repository.find({
+    _id: q_id
+  });
+  res.json(questions);
 };
 
 exports.upvoteQuestion = function*(req, res) {
