@@ -12,6 +12,7 @@ module.exports = {
   waiting_time: Number, // minutes
   waiting_started_at: Date,
   interests: String,
+  hangoutPlaces: [{ type: String }],
   location: String,
   photo: String,
   points: Number,
