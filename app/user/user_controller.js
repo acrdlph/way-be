@@ -152,6 +152,8 @@ exports.updateUser = function*(req, res) {
   user.waiting_time = req.body.waiting_time || user.waiting_time;
   user.name = req.body.name || user.name;
   user.interests = req.body.interests || user.interests;
+  user.email = req.body.email || user.email;
+  user.username = req.body.username || user.username;
   user.hangoutPlaces = req.body.hangoutPlaces || user.hangoutPlaces;
   user.address = req.body.address;
 

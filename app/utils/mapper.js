@@ -12,6 +12,7 @@ exports.mapUserOutput = function mapUserOutput(user, token) {
     id: user.id,
     name: user.name,
     username: user.username,
+    email: user.email,
     default_name: user.default_name,
     interests: user.interests,
     hangoutPlaces: user.hangoutPlaces,
