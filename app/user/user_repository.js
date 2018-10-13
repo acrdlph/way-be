@@ -141,6 +141,7 @@ exports.nearByUsers = function* nearByUsers(
   geolocation,
   maxDistance = constants.USER_NEAR_BY_DISTANCE
 ) {
+  console.log(maxDistance, "hah");
   const geo_near_users = yield user_model
     .find()
     .where("geolocation")
