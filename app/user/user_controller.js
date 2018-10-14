@@ -104,7 +104,6 @@ exports.saveUser = function*(req, res) {
   let location = req.body.location;
   let geolocation = req.body.geolocation;
   const name = req.body.name;
-  const waiting_time = req.body.waiting_time || 30; // default 30 mins
   if (!location && !geolocation)
     throw error_util.createError(400, "Please provide a location");
   const longitude = _.get(geolocation, "longitude");
@@ -119,7 +118,6 @@ exports.saveUser = function*(req, res) {
   }
   const new_user = yield user_repository.createNewUser(
     name,
-    waiting_time,
     location,
     geolocation
   );
@@ -139,17 +137,13 @@ exports.saveUser = function*(req, res) {
 exports.updateUser = function*(req, res) {
   const user = yield user_repository.getUserIfExists(req.params.id);
   user.location = req.body.location || user.location;
-
+  user.distance = req.body.distance || user.distance;
   user.geolocation = req.body.geolocation
     ? db_util.constructPoint(
         parseFloat(req.body.geolocation.longitude),
         parseFloat(req.body.geolocation.latitude)
       )
     : user.geolocation;
-  if (req.query.waiting_started === "true") {
-    user.waiting_started_at = datetime_util.serverCurrentDate();
-  }
-  user.waiting_time = req.body.waiting_time || user.waiting_time;
   user.name = req.body.name || user.name;
   user.interests = req.body.interests || user.interests;
   user.email = req.body.email || user.email;

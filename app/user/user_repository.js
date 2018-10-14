@@ -105,16 +105,10 @@ exports.createNewRegisteredUser = function* createNewRegisteredUser(
 /**
  *
  * @param {*} name
- * @param {*} waiting_time
  * @param {*} location
  * @param {*} geolocation
  */
-exports.createNewUser = function* createNewUser(
-  name,
-  waiting_time,
-  location,
-  geolocation
-) {
+exports.createNewUser = function* createNewUser(name, location, geolocation) {
   const created_at = datetime_util.serverCurrentDate();
   const anon_user_role = yield role_repository.findByName(
     constants.USER_ROLES.ANON_USER.name
@@ -122,10 +116,8 @@ exports.createNewUser = function* createNewUser(
   const new_user = new user_model({
     name: name,
     default_name: constants.USER_DEFAULT_NAME,
-    waiting_time: waiting_time,
     location: location,
     geolocation: geolocation,
-    waiting_started_at: created_at,
     roles: [anon_user_role._id],
     created_at: created_at
   });
@@ -139,19 +131,46 @@ exports.createNewUser = function* createNewUser(
  */
 exports.nearByUsers = function* nearByUsers(
   geolocation,
-  maxDistance = constants.USER_NEAR_BY_DISTANCE
+  maxDistance = constants.USER_NEAR_BY_DISTANCE,
+  id
 ) {
-  console.log(maxDistance, "hah");
+  function distance(lat1, lon1, lat2, lon2) {
+    var R = 6371; // Radius of the earth in km
+    var dLat = ((lat2 - lat1) * Math.PI) / 180; // deg2rad below
+    var dLon = ((lon2 - lon1) * Math.PI) / 180;
+    var a =
+      0.5 -
+      Math.cos(dLat) / 2 +
+      (Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        (1 - Math.cos(dLon))) /
+        2;
+
+    return R * 2 * Math.asin(Math.sqrt(a)) * 1000;
+  }
+
   const geo_near_users = yield user_model
     .find()
-    .where("geolocation")
-    .near({
-      center: geolocation,
-      maxDistance: maxDistance
-    })
     .sort({ endorsement: 1 })
     .limit(200)
     .populate("roles")
     .exec();
-  return geo_near_users;
+  const filtered_users = geo_near_users.filter(user => {
+    return (
+      user._id.toString() === id.toString() ||
+      (distance(
+        geolocation.coordinates[1],
+        geolocation.coordinates[0],
+        user.geolocation.coordinates[1],
+        user.geolocation.coordinates[0]
+      ) <= user.distance &&
+        distance(
+          geolocation.coordinates[1],
+          geolocation.coordinates[0],
+          user.geolocation.coordinates[1],
+          user.geolocation.coordinates[0]
+        ) <= Number(maxDistance))
+    );
+  });
+  return filtered_users;
 };

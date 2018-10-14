@@ -16,9 +16,8 @@ exports.mapUserOutput = function mapUserOutput(user, token) {
     default_name: user.default_name,
     interests: user.interests,
     hangoutPlaces: user.hangoutPlaces,
-    waiting_time: user.waiting_time,
-    waiting_started_at: user.waiting_started_at,
     location: user.location,
+    distance: user.distance,
     address: user.address,
     photo: user.photo,
     geolocation: {
@@ -73,27 +72,14 @@ exports.waitlistBuddy = function waitlistBuddy(user, buddy, messages) {
     address: buddy.address,
     endorsement: buddy.transactions.reduce(reducer, 0),
     location: buddy.location,
+    hangoutPlaces: buddy.hangoutPlaces,
     photo: buddy.photo,
     god_user: buddy.god_user,
-    time_left: exports.getMinTimeLeft(buddy, user),
     count: buddy_sent_messages.length,
     non_delivered_count: non_delivered_messages.length,
     last_contact:
       buddy_messages.length > 0 ? buddy_messages[0].created_at : null
   };
-};
-
-exports.getMinTimeLeft = function getMinTimeLeft(user1, user2) {
-  return Math.min(exports.getTimeLeft(user1), exports.getTimeLeft(user2));
-};
-
-exports.getTimeLeft = function getTimeLeft(user) {
-  // for backward compatibility set waiting_started_at=created_at if waiting_started_at
-  // is not available
-  const waiting_started_at = user.waiting_started_at || user.created_at;
-  return moment(waiting_started_at)
-    .add(user.waiting_time, "m")
-    .diff(datetime_util.serverCurrentDate(), "minutes");
 };
 
 exports.getUserLocation = function getUserLocation(current_location, location) {
