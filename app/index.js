@@ -223,40 +223,38 @@ const event = contract.allEvents({ fromBlock: 0, toBlock: "latest" });
 const user_repository = require("./user/user_repository");
 if (!web3.isConnected()) {
   console.log("********\n\n\n\n\n\n");
-  console.log("Please run blockchain node!!");
+  console.log("Please run blockchain node, fucker!!");
   console.log("\n\n\n\n\n\n********");
-  process.exit();
+} else {
+  event.watch((error, data) => {
+    if (!data.args) {
+      return;
+    }
+
+    const user_address = data.args.user_address;
+    const endorsement = data.args.endorsement;
+    const balance = data.args.balance;
+
+    const transaction = {
+      id: `${data.transactionHash}`,
+      endorsement: parseInt(balance),
+      balance: parseInt(balance)
+    };
+    co(user_repository.getUserByAddress(user_address))
+      .then(user => {
+        user.endorsement = endorsement;
+        user.balance = balance;
+        if (user.transactions.filter(x => x.id == transaction.id).length < 1) {
+          user.transactions.push(transaction);
+        }
+        user.save(() =>
+          console.log(
+            `tx ${
+              transaction.id
+            }: User ${user_address} saved, endorsement ${endorsement}, balance ${endorsement}`
+          )
+        );
+      })
+      .catch(err => logger.error("._."));
+  });
 }
-
-event.watch((error, data) => {
-  if (!data.args) {
-    return;
-  }
-
-  const user_address = data.args.user_address;
-  const endorsement = parseInt(data.args.endorsement / 10 ** 18);
-  const balance = parseInt(data.args.balance / 10 ** 18);
-
-  const transaction = {
-    id: `${data.transactionHash}`,
-    endorsement: endorsement,
-    balance: balance
-  };
-  console.log("Tx data", data.transactionHash);
-  co(user_repository.getUserByAddress(user_address))
-    .then(user => {
-      user.endorsement = endorsement;
-      user.balance = balance;
-      if (user.transactions.filter(x => x.id == transaction.id).length < 1) {
-        user.transactions.push(transaction);
-      }
-      user.save(() =>
-        console.log(
-          `tx ${
-            transaction.id
-          }: User ${user_address} saved, endorsement ${endorsement}, balance ${endorsement}`
-        )
-      );
-    })
-    .catch(err => logger.error("._."));
-});
