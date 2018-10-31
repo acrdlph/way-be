@@ -17,5 +17,10 @@ module.exports = {
   points: Number,
   roles: [{ type: Schema.Types.ObjectId, ref: "Role" }],
   signed_up: Date,
-  created_at: Date
+  created_at: Date,
+  seenModals: {
+    seenListModal: Boolean,
+    seenLocModal: Boolean,
+    seenProfModal: Boolean
+  }
 };
