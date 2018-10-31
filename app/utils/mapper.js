@@ -29,7 +29,8 @@ exports.mapUserOutput = function mapUserOutput(user, token) {
     created_at: user.created_at,
     token: token,
     waytcoins: user.waytcoins,
-    endorsement: user.transactions.reduce(reducer, 0)
+    endorsement: user.transactions.reduce(reducer, 0),
+    seenModals: user.seenModals
   };
 };
 

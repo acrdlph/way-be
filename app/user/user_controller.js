@@ -149,6 +149,7 @@ exports.updateUser = function*(req, res) {
   user.email = req.body.email || user.email;
   user.username = req.body.username || user.username;
   user.hangoutPlaces = req.body.hangoutPlaces || user.hangoutPlaces;
+  user.seenModals = req.body.seenModals || user.seenModals;
   user.address = req.body.address;
 
   yield user.save();

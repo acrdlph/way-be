@@ -89,6 +89,11 @@ exports.createNewRegisteredUser = function* createNewRegisteredUser(
   const user_role = yield role_repository.findByName(
     constants.USER_ROLES.USER.name
   );
+  const seenModals = {
+    seenListModal: false,
+    seenLocModal: false,
+    seenProfModal: false
+  };
   const new_user = new user_model({
     username: username,
     email: email,
@@ -96,7 +101,8 @@ exports.createNewRegisteredUser = function* createNewRegisteredUser(
     default_name: constants.USER_DEFAULT_NAME,
     signed_up: created_at,
     roles: [user_role._id],
-    created_at: created_at
+    created_at: created_at,
+    seenModals: seenModals
   });
   yield new_user.save();
   return new_user;
