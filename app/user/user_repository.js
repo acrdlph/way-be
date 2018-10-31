@@ -163,11 +163,9 @@ exports.nearByUsers = function* nearByUsers(
     .exec();
   const filtered_users = geo_near_users.filter(user => {
     const geolocationCoordinates =
-      typeof geolocation.coordinates !== "undefined"
-        ? geolocation.coordinates
-        : null;
+      typeof geolocation !== "undefined" ? geolocation.coordinates : null;
     const userCoordinates =
-      typeof user.geolocation.coordinates !== "undefined"
+      typeof user.geolocation !== "undefined"
         ? user.geolocation.coordinates
         : null;
 
