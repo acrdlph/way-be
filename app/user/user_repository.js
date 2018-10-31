@@ -162,20 +162,25 @@ exports.nearByUsers = function* nearByUsers(
     .populate("roles")
     .exec();
   const filtered_users = geo_near_users.filter(user => {
+    const geolocationCoordinates =
+      typeof geolocation.coordinates !== "undefined"
+        ? geolocation.coordinates
+        : null;
+    const userCoordinates =
+      typeof user.geolocation.coordinates !== "undefined"
+        ? user.geolocation.coordinates
+        : null;
+
+    const lat = geolocationCoordinates && geolocationCoordinates[1];
+    const long = geolocationCoordinates && geolocationCoordinates[0];
+
+    const userLat = userCoordinates && userCoordinates[1];
+    const userLong = userCoordinates && userCoordinates[0];
+
     return (
       user._id.toString() === id.toString() ||
-      (distance(
-        geolocation.coordinates[1],
-        geolocation.coordinates[0],
-        user.geolocation.coordinates[1],
-        user.geolocation.coordinates[0]
-      ) <= user.distance &&
-        distance(
-          geolocation.coordinates[1],
-          geolocation.coordinates[0],
-          user.geolocation.coordinates[1],
-          user.geolocation.coordinates[0]
-        ) <= Number(maxDistance))
+      (distance(lat, long, userLat, userLong) <= user.distance &&
+        distance(lat, long, userLat, userLong) <= Number(maxDistance))
     );
   });
   return filtered_users;
