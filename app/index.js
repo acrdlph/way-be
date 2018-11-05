@@ -114,6 +114,13 @@ app.post(
     controller.mainControlller(partner_controller.savePartner, req, res)
 );
 
+app.get(
+  "/messages/",
+  accounts_controller.verifyAuthenticationMiddleWare,
+  (req, res) =>
+    controller.mainControlller(message_controller.getAllLastMessages, req, res)
+);
+
 app.post(
   "/messages/receive",
   accounts_controller.verifyAuthenticationMiddleWare,
@@ -137,8 +144,12 @@ app.post("/accounts/login", passport.authenticate("local"), (req, res) =>
   controller.mainControlller(accounts_controller.login, req, res)
 );
 
-app.post("/accounts/logout", (req, res) =>
+app.post("/accounts/logout/:id", (req, res) =>
   controller.mainControlller(accounts_controller.logout, req, res)
+);
+
+app.post("/accounts/addLoggedInUser/:id", (req, res) =>
+  controller.mainControlller(accounts_controller.addLoggedInUsers, req, res)
 );
 
 app.post("/feedback", (req, res) =>

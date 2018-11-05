@@ -56,6 +56,57 @@ exports.usersByUser = function*(req, res) {
   res.json(users);
 };
 
+// exports.getThemMessages = function*(req, res) {
+//   const given_user = yield user_repository.getUserIfExists(req.params.user_id);
+//   const messages = yield message_repository.findByReceiverOrSender(
+//     given_user.id
+//   );
+//   let groupedMessages = [],
+//     j = 0;
+//   function alreadyAdded(groupedMessages, id) {
+//     for (let k = 0; k < j; k++) {
+//       if (groupedMessages[k].id === id) {
+//         return k;
+//       }
+//     }
+//   }
+//   for (let i = 0; i < messages.length; i++) {
+//     if (given_user.id === messages[i].sender_id) {
+//       if (
+//         alreadyAdded(groupedMessages, messages[i].receiver_id) === undefined
+//       ) {
+//         groupedMessages[j] = {
+//           id: messages[i].receiver_id,
+//           messages: messages[i]
+//         };
+//         console.log("proto");
+//         j++;
+//       } else {
+//         console.log("deftero");
+//         // groupedMessages[
+//         //   alreadyAdded(groupedMessages, messages[i].receiver_id)
+//         // ].messages.push(messages[i]);
+//       }
+//     } else {
+//       if (alreadyAdded(groupedMessages, messages[i].sender_id) === undefined) {
+//         console.log("trito");
+//         groupedMessages[j] = {
+//           id: messages[i].sender_id,
+//           messages: messages[i]
+//         };
+//         j++;
+//       } else {
+//         console.log("tetarto");
+//         // groupedMessages[
+//         //   alreadyAdded(groupedMessages, messages[i].sender_id)
+//         // ].messages.push(messages[i]);
+//       }
+//     }
+//   }
+//   console.log(groupedMessages);
+//   res.json(messages);
+// };
+
 /**
  * get the given users details
  * @param {*} req
