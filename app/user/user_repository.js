@@ -96,9 +96,9 @@ exports.createNewRegisteredUser = function* createNewRegisteredUser(
   };
   const new_user = new user_model({
     username: username,
+    name: username,
     email: email,
     password: password,
-    default_name: constants.USER_DEFAULT_NAME,
     signed_up: created_at,
     roles: [user_role._id],
     created_at: created_at,
